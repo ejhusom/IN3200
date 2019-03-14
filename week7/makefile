@@ -1,0 +1,17 @@
+# Makefile by Erik Johannes Husom on 2019-02-06
+# =============================================
+EXEC 			= a.out
+CC 		    	= gcc
+FLAGS      		= -Wall -fopenmp
+
+SRC 			:= week7ex3.c
+#==============================================
+$(EXEC): $(SRC)
+	$(CC) $(FLAGS) $(SRC) -lm -o $@
+	@echo "Linking complete!"
+	@echo $(EXEC) "ready to run!"
+
+clean:
+	@rm -rf *.o $(EXEC)
+	@echo "Cleanup complete!"
+
