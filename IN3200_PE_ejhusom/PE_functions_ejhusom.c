@@ -1,23 +1,43 @@
 #include "PE_functions_ejhusom.h"
 
-read_graph_from_file(FILE *infile){
+void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id){
     /* This function reads web graph from a text file. */
-    double var;
-    int i = 0;
-    FILE *infile;
-    infile = fopen("array.txt","r");
-    while (fscanf(infile, "%lf\n", &var) == 1){
-        //arr[i] = var;
-        i++;
+
+    FILE *infile = fopen(filename,"r");
+
+    if(infile==NULL){
+        printf("File not found.\n");
+        exit(0);
     }
-    fclose(infile);
+
+    int nodes;
+    int edges;
+    for(int i=0; i<2; i++) fscanf(infile, "%*[^\n]\n"); // skip the first lines.
+    fscanf(infile, "%*s %*s %d %*s %d ", &nodes, &edges); // read number of nodes and edges.
+    fscanf(infile, "%*[^\n]\n"); // skip another line
+
+
+    from_node_id = malloc(edges*sizeof*from_node_id);
+    to_node_id = malloc(edges*sizeof*to_node_id);
+
+    for(int i=0; i<edges; i++){
+        fscanf(infile, "%d %d", &from_node_id[i], &to_node_id[i]);
+    } 
+
+    printf("File '%s' read successfully!\n", filename);
+// Print out webgraph
+//    printf("Nodes: %d, edges: %d\n", nodes, edges);
+//    for(int i=0; i<edges; i++){
+//        printf("%d   %d\n", from_node_id[i], to_node_id[i]);
+//    }
+
 }
 
-PageRank_iterations(){
+void PageRank_iterations(){
 
 }
 
-top_n_webpages(int n){
+void top_n_webpages(int n){
     /* This function lists the top n webpages with their score. */
     int page_idx = 0;
     double score = 1.0;
