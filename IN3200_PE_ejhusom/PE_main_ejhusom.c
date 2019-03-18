@@ -13,15 +13,18 @@ int main(int argc, char *argv[]){
     int *from_node_id = NULL; 
     int *to_node_id = NULL;
     // Hyperlink matrix in CRS format:
-    double *val;
-    int *col_idx;
-    int *row_ptr;
+    double *val = NULL;
+    int *col_idx = NULL;
+    int *row_ptr = NULL;
 
     read_graph_from_file(filename, from_node_id, to_node_id, val, col_idx, row_ptr);
 
 
     free(from_node_id);
     free(to_node_id);
+    free(val);
+    free(col_idx);
+    free(row_ptr);
 
     return 0;
 }

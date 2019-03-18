@@ -5,7 +5,9 @@
 #include <stdio.h>
 
 void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id, double *val, int *col_idx, int *row_ptr);
-void PageRank_iterations();
+void PageRank_iterations(double damping, double threshold);
 void top_n_webpages(int n);
+void swap(int *a, int *b);
+void sort(int arr[], int beg, int end, int perm[]);
 
 #endif /* PE_FUNCTIONS_EJHUSOM_H */
