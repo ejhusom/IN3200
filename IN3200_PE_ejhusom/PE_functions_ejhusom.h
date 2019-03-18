@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id);
+void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id, double *val, int *col_idx, int *row_ptr);
 void PageRank_iterations();
 void top_n_webpages(int n);
 
