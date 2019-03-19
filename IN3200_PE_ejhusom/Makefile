@@ -6,12 +6,12 @@
 # =============================================
 EXEC 			= a.out
 CC 		    	= gcc
-FLAGS       	= -Wall
+FLAGS       	= -fopenmp
 
 SRC 			:= $(wildcard *.c)
 #====================================================
 $(EXEC): $(SRC)
-	$(CC) $(FLAGS) $(SRC) -lm -o $@
+	$(CC) $(FLAGS) $(SRC) -o $@
 	@echo "Linking complete!"
 	@echo $(EXEC) "ready to run!"
 

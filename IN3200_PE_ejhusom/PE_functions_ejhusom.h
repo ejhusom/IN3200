@@ -3,9 +3,10 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <omp.h>
 
-void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id, double *val, int *col_idx, int *row_ptr);
-void PageRank_iterations(double damping, double threshold);
+int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_ptr, int **D, int *dangling_count);
+void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x, double **x_new, int node_count, double damping, double threshold, int **D, int *dangling_count);
 void top_n_webpages(int n);
 void swap(int *a, int *b);
 void sort(int arr[], int beg, int end, int perm[]);

@@ -1,8 +1,7 @@
 #include "PE_functions_ejhusom.h"
 
-void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id, double *val, int *col_idx, int *row_ptr){
+int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_ptr, int **D, int *dangling_count){
     /* This function reads web graph from a text file, and sets up the hyperlink matrix in CRS format. */
-
     // READ FILE -----------------------------------------------------
     FILE *infile = fopen(filename,"r");
 
@@ -16,11 +15,11 @@ void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id, do
     fscanf(infile, "%*s %*s %d %*s %d ", &node_count, &edge_count); // read number of nodes and edges.
     fscanf(infile, "%*[^\n]\n"); // skip another line
 
-    from_node_id = malloc(edge_count*sizeof*from_node_id);
-    to_node_id = malloc(edge_count*sizeof*to_node_id);
-    val = malloc(edge_count*sizeof*val);
-    col_idx = malloc(edge_count*sizeof*col_idx);
-    row_ptr = malloc(node_count*sizeof*row_ptr);
+    int *from_node_id = malloc(edge_count*sizeof*from_node_id);
+    int *to_node_id = malloc(edge_count*sizeof*to_node_id);
+    (*val) = malloc(edge_count*sizeof*(*val));
+    (*col_idx) = malloc(edge_count*sizeof*(*col_idx));
+    (*row_ptr) = malloc((node_count+1)*sizeof*(*row_ptr));
 
     for(int edge=0; edge<edge_count; edge++){
         fscanf(infile, "%d %d", &from_node_id[edge], &to_node_id[edge]);
@@ -28,7 +27,7 @@ void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id, do
 
     printf("File '%s' read successfully!\n", filename);
 // Print out webgraph
-//    printf("Nodes: %d, edge_count: %d\n", node_count, edge_count);
+//    printf("Nodes: %d, edges: %d\n", node_count, edge_count);
 //    for(int i=0; i<edge_count; i++){
 //        printf("%d   %d\n", from_node_id[i], to_node_id[i]);
 //    }
@@ -39,35 +38,54 @@ void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id, do
         perm[i] = i;
     }
     sort(from_node_id, 0, edge_count, perm); // sorting to find L(j) 
-
     int *L = malloc(node_count*sizeof*L);
     int edge = 0;
     for(int node=0; node<node_count; node++){
+        L[node] = 0;
         while(from_node_id[perm[edge]]==node){
             L[node]++;
             edge++;
         }
+        if(L[node]==0){
+            (*dangling_count)++;
+        }
     }
-    // Print L(j)
-//    for(int node=0; node<node_count; node++){
-//        printf("%d\n", L[node]);
-//    }
+    if(*dangling_count>0){
+        printf("No. of dangling webpages: %d\n", *dangling_count);
+        (*D) = malloc(*dangling_count*sizeof*(*D));
+        int node = 0;
+        for(int d_node=0; d_node<*dangling_count; d_node++){
+            while(L[node] != 0){
+               node++; 
+            }
+            (*D)[d_node] = node;
+            node++;
+        }
+    } else {
+        printf("No dangling webpages.\n");
+    }
 
+    // Print L(j) and D
+//    for(int node=0; node<node_count; node++){
+//        printf("L(%d): %d\n", node, L[node]);
+//    }
+//    for(int node=0; node<*dangling_count; node++){
+//        printf("D(%d): %d\n", node, D[node]);
+//    }
     // Sorting arrays --------------------------------------------------------------
     sort(to_node_id, 0, edge_count, perm);
 
     int start = 0;
-    int end = 0;
     edge = 0;
     for(int node=0; node<node_count; node++){
-        row_ptr[node] = start;
+        (*row_ptr)[node] = start;
         while(to_node_id[perm[edge]]==node){
-            end++;
             edge++;
         }
-        sort(from_node_id, start, end, perm);
-        start = end;
+        sort(from_node_id, start, edge, perm);
+        start = edge;
     }
+    (*row_ptr)[node_count] = edge_count;
     printf("Sorting done!\n");
 
     // Printing sorted array 
@@ -78,26 +96,63 @@ void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id, do
 
     // Setting up hyperlink matrix in CRS format ----------------------------------
     for(int edge=0; edge<edge_count; edge++){
-        col_idx[edge] = from_node_id[perm[edge]];
-        val[edge] = 1.0/(double)L[col_idx[edge]];
+        (*col_idx)[edge] = from_node_id[perm[edge]];
+        (*val)[edge] = 1.0/(double)L[(*col_idx)[edge]];
     }    
 
     // Printing hyperlink matrix
-//    printf("========\n");
-//    for (size_t i = 0; i < 17; i++) {
-//        printf("%f  %d\n", val[i], col_idx[i]);
+//    printf("val      col_idx\n");
+//    for (size_t i = 0; i < edge_count; i++) {
+//        printf("%f  %d\n", (*val)[i], (*col_idx)[i]);
 //    }
-//    printf("========\n");
-//    for (size_t i = 0; i < 8; i++) {
-//        printf("%d\n", row_ptr[i]);
+//    printf("row_ptr\n");
+//    for (size_t i = 0; i < node_count; i++) {
+//        printf("%d\n", (*row_ptr)[i]);
 //    }
 
+    free(from_node_id);
+    free(to_node_id);
     free(L);
     free(perm);
 
+    return node_count;
 }
 
-void PageRank_iterations(double damping, double threshold){
+void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x, double **x_new, int node_count, double damping, double threshold, int **D, int *dangling_count){
+    // Initial guess:
+    for(int i=0; i<node_count; i++){
+       (*x)[i] = 1.0/(double)node_count;
+    }    
+    double W;
+    double temp;
+
+
+
+
+
+
+    for(int i=0; i<node_count; i++) printf("x%d: %f\n", i, (*x)[i]);
+
+    // while loop start
+    W = 0;
+    for(int d_node=0; d_node<*dangling_count; d_node++){
+        W += (*x)[(*D)[d_node]];
+    }
+    printf("W: %f\n", W);
+    temp = (1 - damping + damping*W)/(double)node_count;
+    for(int i=0; i<node_count; i++){
+        (*x_new)[i] = 0;
+        for(int j=(*row_ptr)[i]; j<(*row_ptr)[i+1]; j++){
+            (*x_new)[i] += (*val)[j]*((*x)[(*col_idx)[j]]); 
+        }
+        //(*x_new)[i] *= damping + temp;
+    }
+    for(int i=0; i<node_count; i++) (*x)[i] = (*x_new)[i];
+    // while loop stop
+
+
+
+    for(int i=0; i<node_count; i++) printf("x%d: %f\n", i, (*x)[i]);
 
 }
 
@@ -130,4 +185,3 @@ void sort(int arr[], int beg, int end, int perm[]){
     sort(arr, r, end, perm);
   }
 }
-
