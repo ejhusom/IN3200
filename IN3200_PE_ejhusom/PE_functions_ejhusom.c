@@ -20,9 +20,13 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
     (*val) = malloc(edge_count*sizeof*(*val));
     (*col_idx) = malloc(edge_count*sizeof*(*col_idx));
     (*row_ptr) = malloc((node_count+1)*sizeof*(*row_ptr));
+    int *L = malloc(node_count*sizeof*L);
+    int *inbound_count = malloc(node_count*sizeof*inbound_count);
 
     for(int edge=0; edge<edge_count; edge++){
         fscanf(infile, "%d %d", &from_node_id[edge], &to_node_id[edge]);
+        L[from_node_id[edge]]++;
+        inbound_count[to_node_id[edge]]++;
     } 
 
     printf("File '%s' read successfully!\n", filename);
@@ -32,23 +36,15 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
 //        printf("%d   %d\n", from_node_id[i], to_node_id[i]);
 //    }
 
-    // Finding L(j) -----------------------------------------------------------------
+    // Finding L(j) and D ---------------------------------------------------------
     int *perm = malloc(edge_count*sizeof*perm);
     for (size_t i = 0; i < edge_count; i++) {
         perm[i] = i;
     }
     sort(from_node_id, 0, edge_count, perm); // sorting to find L(j) 
-    int *L = malloc(node_count*sizeof*L);
     int edge = 0;
     for(int node=0; node<node_count; node++){
-        L[node] = 0;
-        while(from_node_id[perm[edge]]==node){
-            L[node]++;
-            edge++;
-        }
-        if(L[node]==0){
-            (*dangling_count)++;
-        }
+        if(L[node]==0) (*dangling_count)++;
     }
     if(*dangling_count>0){
         printf("No. of dangling webpages: %d\n", *dangling_count);
@@ -70,27 +66,26 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
 //        printf("L(%d): %d\n", node, L[node]);
 //    }
 //    for(int node=0; node<*dangling_count; node++){
-//        printf("D(%d): %d\n", node, D[node]);
+//        printf("D(%d): %d\n", node, (*D)[node]);
 //    }
     // Sorting arrays --------------------------------------------------------------
     sort(to_node_id, 0, edge_count, perm);
 
     int start = 0;
-    edge = 0;
+    int end = 0;
     for(int node=0; node<node_count; node++){
         (*row_ptr)[node] = start;
-        while(to_node_id[perm[edge]]==node){
-            edge++;
-        }
-        sort(from_node_id, start, edge, perm);
-        start = edge;
+        end += inbound_count[node];         
+        sort(from_node_id, start, end, perm);
+        start = end;
     }
     (*row_ptr)[node_count] = edge_count;
+
     printf("Sorting done!\n");
 
     // Printing sorted array 
 //    printf("========\n");
-//    for (size_t i = 0; i < 17; i++) {
+//    for (size_t i = 0; i < edge_count; i++) {
 //        printf("%d  %d\n", from_node_id[perm[i]], to_node_id[perm[i]]);
 //    }
 
@@ -125,33 +120,30 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
     }    
     double W;
     double temp;
+    double diff;
+    int counter = 0;
 
-
-
-
-
-
-    for(int i=0; i<node_count; i++) printf("x%d: %f\n", i, (*x)[i]);
-
-    // while loop start
-    W = 0;
-    for(int d_node=0; d_node<*dangling_count; d_node++){
-        W += (*x)[(*D)[d_node]];
-    }
-    printf("W: %f\n", W);
-    temp = (1 - damping + damping*W)/(double)node_count;
-    for(int i=0; i<node_count; i++){
-        (*x_new)[i] = 0;
-        for(int j=(*row_ptr)[i]; j<(*row_ptr)[i+1]; j++){
-            (*x_new)[i] += (*val)[j]*((*x)[(*col_idx)[j]]); 
+    do {
+        W = 0;
+        diff = 0;
+        for(int d_node=0; d_node<*dangling_count; d_node++){
+            W += (*x)[(*D)[d_node]];
         }
-        //(*x_new)[i] *= damping + temp;
-    }
-    for(int i=0; i<node_count; i++) (*x)[i] = (*x_new)[i];
-    // while loop stop
+        temp = (1 - damping + damping*W)/(double)node_count;
+        for(int i=0; i<node_count; i++){
+            (*x_new)[i] = 0;
+            for(int j=(*row_ptr)[i]; j<(*row_ptr)[i+1]; j++){
+                (*x_new)[i] += (*val)[j]*((*x)[(*col_idx)[j]]); 
+            }
+            (*x_new)[i] *= damping + temp;
+            diff += abs((*x)[i] - (*x_new)[i]);
+        }
+        for(int i=0; i<node_count; i++) (*x)[i] = (*x_new)[i];
+        counter++;
+    } while(diff > threshold);
 
-
-
+    printf("Counter: %d\n", counter);
+    // Print resulting vector
     for(int i=0; i<node_count; i++) printf("x%d: %f\n", i, (*x)[i]);
 
 }

@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
     int *row_ptr = NULL;
     // PageRank algorithm:
     double damping = 0.85;
-    double threshold = 0.1;
+    double threshold = 0.00000001;
     int dangling_count = 0; 
 
     switch (argc) {
