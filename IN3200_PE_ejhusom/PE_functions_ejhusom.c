@@ -33,12 +33,17 @@ void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id, do
 //        printf("%d   %d\n", from_node_id[i], to_node_id[i]);
 //    }
 
-
     // Finding L(j) -----------------------------------------------------------------
+    int *perm = malloc(edge_count*sizeof*perm);
+    for (size_t i = 0; i < edge_count; i++) {
+        perm[i] = i;
+    }
+    sort(from_node_id, 0, edge_count, perm); // sorting to find L(j) 
+
     int *L = malloc(node_count*sizeof*L);
     int edge = 0;
     for(int node=0; node<node_count; node++){
-        while(from_node_id[edge]==node){
+        while(from_node_id[perm[edge]]==node){
             L[node]++;
             edge++;
         }
@@ -49,18 +54,13 @@ void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id, do
 //    }
 
     // Sorting arrays --------------------------------------------------------------
-    int *perm = malloc(edge_count*sizeof*perm);
-    for (size_t i = 0; i < edge_count; i++) {
-        perm[i] = i;
-    }
-
     sort(to_node_id, 0, edge_count, perm);
-
 
     int start = 0;
     int end = 0;
     edge = 0;
     for(int node=0; node<node_count; node++){
+        row_ptr[node] = start;
         while(to_node_id[perm[edge]]==node){
             end++;
             edge++;
@@ -72,11 +72,25 @@ void read_graph_from_file(char *filename, int *from_node_id, int *to_node_id, do
 
     // Printing sorted array 
 //    printf("========\n");
-//    for (size_t i = 0; i < 10; i++) {
+//    for (size_t i = 0; i < 17; i++) {
 //        printf("%d  %d\n", from_node_id[perm[i]], to_node_id[perm[i]]);
 //    }
 
     // Setting up hyperlink matrix in CRS format ----------------------------------
+    for(int edge=0; edge<edge_count; edge++){
+        col_idx[edge] = from_node_id[perm[edge]];
+        val[edge] = 1.0/(double)L[col_idx[edge]];
+    }    
+
+    // Printing hyperlink matrix
+//    printf("========\n");
+//    for (size_t i = 0; i < 17; i++) {
+//        printf("%f  %d\n", val[i], col_idx[i]);
+//    }
+//    printf("========\n");
+//    for (size_t i = 0; i < 8; i++) {
+//        printf("%d\n", row_ptr[i]);
+//    }
 
     free(L);
     free(perm);
