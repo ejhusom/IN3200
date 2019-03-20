@@ -36,12 +36,11 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
 //        printf("%d   %d\n", from_node_id[i], to_node_id[i]);
 //    }
 
-    // Finding L(j) and D ---------------------------------------------------------
+    // Finding D ---------------------------------------------------------
     int *perm = malloc(edge_count*sizeof*perm);
     for (size_t i = 0; i < edge_count; i++) {
         perm[i] = i;
     }
-    sort(from_node_id, 0, edge_count, perm); // sorting to find L(j) 
     int edge = 0;
     for(int node=0; node<node_count; node++){
         if(L[node]==0) (*dangling_count)++;
@@ -60,7 +59,7 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
     } else {
         printf("No dangling webpages.\n");
     }
-
+    printf("Calculated D!\n");
     // Print L(j) and D
 //    for(int node=0; node<node_count; node++){
 //        printf("L(%d): %d\n", node, L[node]);
@@ -70,7 +69,7 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
 //    }
     // Sorting arrays --------------------------------------------------------------
     sort(to_node_id, 0, edge_count, perm);
-
+    printf("First sorting done!\n");
     int start = 0;
     int end = 0;
     for(int node=0; node<node_count; node++){
@@ -120,12 +119,12 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
     }    
     double W;
     double temp;
-    double diff;
-    int counter = 0;
+    double diff = 1.0;
+    int counter_while = 0;
+    int counter_for = 0;
 
     do {
         W = 0;
-        diff = 0;
         for(int d_node=0; d_node<*dangling_count; d_node++){
             W += (*x)[(*D)[d_node]];
         }
@@ -135,28 +134,58 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
             for(int j=(*row_ptr)[i]; j<(*row_ptr)[i+1]; j++){
                 (*x_new)[i] += (*val)[j]*((*x)[(*col_idx)[j]]); 
             }
-            (*x_new)[i] *= damping + temp;
-            diff += abs((*x)[i] - (*x_new)[i]);
+            (*x_new)[i] = (*x_new)[i]*damping + temp;
+            if(diff >  fabs((*x)[i] - (*x_new)[i])) diff = fabs((*x)[i] - (*x_new)[i]);
+            counter_for++;
         }
         for(int i=0; i<node_count; i++) (*x)[i] = (*x_new)[i];
-        counter++;
+        counter_while++;
     } while(diff > threshold);
 
-    printf("Counter: %d\n", counter);
+    printf("Counter: %d\n", counter_while);
+    printf("Counter (for loop): %d\n", counter_for);
     // Print resulting vector
-    for(int i=0; i<node_count; i++) printf("x%d: %f\n", i, (*x)[i]);
+//    for(int i=0; i<node_count; i++) printf("x%d: %.20f\n", i, (*x)[i]);
 
 }
 
-void top_n_webpages(int n){
+void top_n_webpages(double **x, int n, int node_count){
     /* This function lists the top n webpages with their score. */
-    int page_idx = 0;
-    double score = 1.0;
-
-    printf("Rank  Page index    Score");
-    for (int i=1; i<n+1; i++){
-        printf("%d   %d    %f", i, page_idx, score);
+    int *perm = malloc(node_count*sizeof*perm);
+    for (int i = 0; i<node_count; i++) {
+        perm[i] = i;
     }
+
+    sort_double(*x, 0, node_count, perm);
+
+    printf("Rank        Page          Score\n");
+    for (int i=0; i<n; i++){
+        printf("%3d      %10d       %.20f\n", i+1, perm[node_count - 1 - i], (*x)[perm[node_count - 1 - i]]);
+    }
+
+//
+//    double roof = 10.0;
+//    double max_temp = 0;
+//    int rank = 1;
+//    int idx = node_count;
+//    int idx_prev = node_count;
+//    printf("Rank  Page   Score\n");
+//    for(int i=0; i<n; i++){
+//        for(int node=0; node<node_count; node++){
+//            if((*x)[node] > max_temp && (*x)[node] <= roof && idx_prev != node){
+//                max_temp = (*x)[node];
+//                idx = node;
+//            }
+//        }
+//        printf("%d      %d       %.20f\n", rank, idx, max_temp);
+//        rank++;
+//        roof = max_temp;
+//        max_temp = 0;
+//        idx_prev = idx;
+//    }
+
+
+
 }
 
 void swap(int *a, int *b){
@@ -175,5 +204,21 @@ void sort(int arr[], int beg, int end, int perm[]){
     swap(&perm[--l], &perm[beg]);
     sort(arr, beg, l, perm);
     sort(arr, r, end, perm);
+  }
+}
+
+void sort_double(double arr[], int beg, int end, int perm[]){
+  if (end > beg + 1) {
+    double piv = arr[perm[beg]];
+    int l = beg + 1, r = end;
+    while (l < r) {
+      if (arr[perm[l]] <= piv)
+        l++;
+      else
+        swap(&perm[l], &perm[--r]);
+    }
+    swap(&perm[--l], &perm[beg]);
+    sort_double(arr, beg, l, perm);
+    sort_double(arr, r, end, perm);
   }
 }
