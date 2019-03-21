@@ -12,8 +12,8 @@ int main(int argc, char *argv[]){
     int *col_idx = NULL;
     int *row_ptr = NULL;
     // PageRank algorithm:
-    double damping = 1.00;
-    double threshold = 1e-3;
+    double damping = 0.85;
+    double threshold = 1e-2;
     int dangling_count = 0; 
 
     switch (argc) {

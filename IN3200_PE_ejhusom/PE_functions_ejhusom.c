@@ -45,7 +45,6 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
     (*val) = malloc(edge_count*sizeof*(*val));
     (*col_idx) = malloc(edge_count*sizeof*(*col_idx));
 
-
     /* DEBUG: Print out webgraph */
 //    for(int i=0; i<edge_count; i++){
 //        printf("%d   %d\n", from_node_id[i], to_node_id[i]);
@@ -58,6 +57,7 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
         sum += inbound_count[i-1];
         (*row_ptr)[i] = sum;
         // printf("row_ptr: %d\n", (*row_ptr)[i]); /* DEBUG */
+        //printf("inbound_count: %d\n", inbound_count[i-1]); /* DEBUG */
     }
 
     /* FINDING D *****************************************************/
@@ -86,33 +86,94 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
 //    for(int node=0; node<*dangling_count; node++){
 //        printf("D(%d): %d\n", node, (*D)[node]);
 //    }
-    // Sorting arrays --------------------------------------------------------------
+
+    /* Sorting arrays *************************************************/
     int *perm = malloc(edge_count*sizeof*perm);
     for (size_t i = 0; i < edge_count; i++) {
         perm[i] = i;
     }
-    sort(to_node_id, 0, edge_count, perm);
-    int start = 0;
-    int end = 0;
-    for(int node=0; node<node_count; node++){
-        end += inbound_count[node];         
-        sort(from_node_id, start, end, perm);
-        start = end;
+//    struct timespec start, end;
+//	clock_gettime(CLOCK_REALTIME, &start);
+//    sort(from_node_id, 0, edge_count, perm);
+//    clock_gettime(CLOCK_REALTIME, &end);
+//	double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+//	printf("Time elapsed for sorting is %f seconds.\n\n", time_spent);
+//    int col;
+//    int row;
+//    int idx;
+//    int *elm_count = calloc(node_count, sizeof*elm_count);
+//    for(int edge=0; edge<edge_count; edge++){
+//        col = from_node_id[perm[edge]];
+//        row = to_node_id[perm[edge]];
+//        elm_count[row]++;
+//        idx = (*row_ptr)[row] + elm_count[row] - 1;
+//        (*col_idx)[idx] = col;
+//        (*val)[idx] = 1.0/((double)outbound_count[col]);
+//    }
+
+    int col;
+    int row;
+    int idx;
+    int *elm_count = calloc(node_count, sizeof*elm_count);
+    for(int edge=0; edge<edge_count; edge++){
+        col = from_node_id[perm[edge]];
+        row = to_node_id[perm[edge]];
+        elm_count[row]++;
+        idx = (*row_ptr)[row] + elm_count[row] - 1;
+        (*col_idx)[idx] = col;
     }
+
+    struct timespec start, end;
+    int start_idx = 0;
+    int end_idx = 0;
+	clock_gettime(CLOCK_REALTIME, &start);
+    for(int node=0; node<node_count; node++){
+        end_idx += inbound_count[node];         
+        sort(from_node_id, start_idx, end_idx, perm);
+        start_idx = end_idx;
+    }
+    clock_gettime(CLOCK_REALTIME, &end);
+	double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+    printf("Time elapsed for sorting is %f seconds.\n\n", time_spent);
 
     printf("Sorting done!\n");
 
-    // Printing sorted array 
-//    printf("========\n");
-//    for (size_t i = 0; i < edge_count; i++) {
-//        printf("%d  %d\n", from_node_id[perm[i]], to_node_id[perm[i]]);
-//    }
-
-    // Setting up hyperlink matrix in CRS format ----------------------------------
     for(int edge=0; edge<edge_count; edge++){
-        (*col_idx)[edge] = from_node_id[perm[edge]];
         (*val)[edge] = 1.0/((double)outbound_count[(*col_idx)[edge]]);
-    }    
+
+    }
+
+//    struct timespec start, end;
+//	clock_gettime(CLOCK_REALTIME, &start);
+//    sort(to_node_id, 0, edge_count, perm);
+//    clock_gettime(CLOCK_REALTIME, &end);
+//	double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+//	printf("Time elapsed for sorting is %f seconds.\n\n", time_spent);
+//    int start_idx = 0;
+//    int end_idx = 0;
+//	clock_gettime(CLOCK_REALTIME, &start);
+//    for(int node=0; node<node_count; node++){
+//        end_idx += inbound_count[node];         
+//        sort(from_node_id, start_idx, end_idx, perm);
+//        start_idx = end_idx;
+//    }
+//    clock_gettime(CLOCK_REALTIME, &end);
+//	time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+//	printf("Time elapsed for sorting is %f seconds.\n\n", time_spent);
+//
+//    printf("Sorting done!\n");
+//
+//    // Printing sorted array 
+////    printf("========\n");
+////    for (size_t i = 0; i < edge_count; i++) {
+////        printf("%d  %d\n", from_node_id[perm[i]], to_node_id[perm[i]]);
+////    }
+//
+//    // Setting up hyperlink matrix in CRS format ----------------------------------
+//    for(int edge=0; edge<edge_count; edge++){
+//        (*col_idx)[edge] = from_node_id[perm[edge]];
+//        (*val)[edge] = 1.0/((double)outbound_count[(*col_idx)[edge]]);
+//    }    
     // Printing hyperlink matrix
 //    printf("val      col_idx\n");
 //    for (size_t i = 0; i < edge_count; i++) {
