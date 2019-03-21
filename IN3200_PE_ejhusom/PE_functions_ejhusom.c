@@ -12,7 +12,7 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
         exit(0);
     }
 
-    printf("\n*************************\n");
+    printf("\n******************************\n");
     printf("Web graph: %s\n", filename);
 
     int node_count;
@@ -129,6 +129,7 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
     free(outbound_count);
     free(inbound_count);
     free(perm);
+    free(elm_count);
 
     return node_count;
 }
@@ -152,7 +153,7 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
         }
         temp = (1 - damping + damping*W)/(double)node_count;
 
-        //#pragma omp parallel for schedule(static)
+        ////#pragma omp parallel for schedule(static)
         for(int i=0; i<node_count; i++){
             (*x_new)[i] = 0;
             for(int j=(*row_ptr)[i]; j<(*row_ptr)[i+1]; j++){
@@ -177,74 +178,26 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
 
 }
 
-void top_n_webpages(double **x, int n, int node_count){
+void top_n_webpages(double *x, int n, int node_count){
     /* This function lists the top n webpages with their score. */
 
-    struct timespec start, end;
-    clock_gettime(CLOCK_REALTIME, &start);
-    int *perm = malloc(node_count*sizeof*perm);
-    for (int i = 0; i<node_count; i++) {
-        perm[i] = i;
-    }
-
-    sort_double(*x, 0, node_count, perm);
-
-    printf("Rank          Page      Score\n");
-    for (int i=0; i<n; i++){
-        printf("%3d.      %7d       %.10f\n", i+1, perm[node_count - 1 - i], (*x)[perm[node_count - 1 - i]]);
-    }
-
-    free(perm);
-
-    clock_gettime(CLOCK_REALTIME, &end);
-    double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-    printf("Time elapsed for method 1 is %f seconds.\n\n", time_spent);
-    
-    clock_gettime(CLOCK_REALTIME, &start);
     double max = 0;
     int rank = 1;
     int idx = node_count;
     printf("Rank          Page      Score\n");
     for(int i=0; i<n; i++){
         for(int node=0; node<node_count; node++){
-            if((*x)[node] > max){
-                max = (*x)[node];
+            if((x)[node] > max){
+                max = (x)[node];
                 idx = node;
                 
             }
         }
         printf("%3d.      %7d       %.10f\n", rank, idx, max);
         rank++;
-        (*x)[idx] = 0;
+        (x)[idx] = 0;
         max = 0;
     }
-    clock_gettime(CLOCK_REALTIME, &end);
-    time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-    printf("Time elapsed for method 2 is %f seconds.\n\n", time_spent);
-
-
-
-//    double roof = 10.0;
-//    double max_temp = 0;
-//    int rank = 1;
-//    int idx = node_count;
-//    int idx_prev = node_count;
-//    printf("Rank  Page   Score\n");
-//    for(int i=0; i<n; i++){
-//        for(int node=0; node<node_count; node++){
-//            if((*x)[node] > max_temp && (*x)[node] <= roof && idx_prev != node){
-//                max_temp = (*x)[node];
-//                idx = node;
-//            }
-//        }
-//        printf("%d      %d       %.20f\n", rank, idx, max_temp);
-//        rank++;
-//        roof = max_temp;
-//        max_temp = 0;
-//        idx_prev = idx;
-//    }
-
-
 
 }
 
