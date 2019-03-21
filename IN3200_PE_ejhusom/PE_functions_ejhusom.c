@@ -147,7 +147,7 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
         }
         temp = (1 - damping + damping*W)/(double)node_count;
 
-        //#pragma omp parallel for
+        //#pragma omp parallel for schedule(static)
         for(int i=0; i<node_count; i++){
             (*x_new)[i] = 0;
             for(int j=(*row_ptr)[i]; j<(*row_ptr)[i+1]; j++){
@@ -181,9 +181,9 @@ void top_n_webpages(double **x, int n, int node_count){
 
     sort_double(*x, 0, node_count, perm);
 
-    printf("Rank        Page          Score\n");
+    printf("Rank          Page      Score\n");
     for (int i=0; i<n; i++){
-        printf("%3d      %10d       %.10f\n", i+1, perm[node_count - 1 - i], (*x)[perm[node_count - 1 - i]]);
+        printf("%3d      %7d       %.10f\n", i+1, perm[node_count - 1 - i], (*x)[perm[node_count - 1 - i]]);
     }
 
     free(perm);
