@@ -11,6 +11,10 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
         printf("File not found.\n");
         exit(0);
     }
+
+    printf("\n*************************\n");
+    printf("Web graph: %s\n", filename);
+
     int node_count;
     int edge_count;
     for(int i=0; i<2; i++) fscanf(infile, "%*[^\n]\n"); // skip the first lines.
@@ -38,7 +42,6 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
         }
     }
     fclose(infile);
-    printf("File '%s' read successfully!\n", filename);
     printf("Number of self-links: %d\n", edge_count - edge_count_new);
     edge_count = edge_count_new; // removing self-linkage.
 
@@ -56,11 +59,11 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
     for(int i=1; i<node_count+1; i++){
         sum += inbound_count[i-1];
         (*row_ptr)[i] = sum;
-        // printf("row_ptr: %d\n", (*row_ptr)[i]); /* DEBUG */
+        //printf("row_ptr: %d\n", (*row_ptr)[i]); /* DEBUG */
         //printf("inbound_count: %d\n", inbound_count[i-1]); /* DEBUG */
     }
 
-    /* FINDING D *****************************************************/
+    /* FINDING DANGLING WEBPAGES *****************************************************/
     for(int node=0; node<node_count; node++){
         if(outbound_count[node]==0) (*dangling_count)++;
     }
@@ -79,37 +82,16 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
         printf("No dangling webpages.\n");
     }
 
-    // Print L(j) and D
-//    for(int node=0; node<node_count; node++){
-//        printf("outbound_count(%d): %d\n", node, outbound_count[node]);
-//    }
+    /* DEBUG: Print D */
 //    for(int node=0; node<*dangling_count; node++){
 //        printf("D(%d): %d\n", node, (*D)[node]);
 //    }
 
-    /* Sorting arrays *************************************************/
+    /* SETTING UP CRS MATRIX *************************************************/
     int *perm = malloc(edge_count*sizeof*perm);
     for (size_t i = 0; i < edge_count; i++) {
         perm[i] = i;
     }
-//    struct timespec start, end;
-//	clock_gettime(CLOCK_REALTIME, &start);
-//    sort(from_node_id, 0, edge_count, perm);
-//    clock_gettime(CLOCK_REALTIME, &end);
-//	double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-//	printf("Time elapsed for sorting is %f seconds.\n\n", time_spent);
-//    int col;
-//    int row;
-//    int idx;
-//    int *elm_count = calloc(node_count, sizeof*elm_count);
-//    for(int edge=0; edge<edge_count; edge++){
-//        col = from_node_id[perm[edge]];
-//        row = to_node_id[perm[edge]];
-//        elm_count[row]++;
-//        idx = (*row_ptr)[row] + elm_count[row] - 1;
-//        (*col_idx)[idx] = col;
-//        (*val)[idx] = 1.0/((double)outbound_count[col]);
-//    }
 
     int col;
     int row;
@@ -123,58 +105,20 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
         (*col_idx)[idx] = col;
     }
 
-    struct timespec start, end;
     int start_idx = 0;
-    int end_idx = 0;
-	clock_gettime(CLOCK_REALTIME, &start);
+    int  end_idx = 0;
     for(int node=0; node<node_count; node++){
         end_idx += inbound_count[node];         
         sort(from_node_id, start_idx, end_idx, perm);
         start_idx = end_idx;
     }
-    clock_gettime(CLOCK_REALTIME, &end);
-	double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-    printf("Time elapsed for sorting is %f seconds.\n\n", time_spent);
-
-    printf("Sorting done!\n");
 
     for(int edge=0; edge<edge_count; edge++){
         (*val)[edge] = 1.0/((double)outbound_count[(*col_idx)[edge]]);
 
     }
 
-//    struct timespec start, end;
-//	clock_gettime(CLOCK_REALTIME, &start);
-//    sort(to_node_id, 0, edge_count, perm);
-//    clock_gettime(CLOCK_REALTIME, &end);
-//	double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-//	printf("Time elapsed for sorting is %f seconds.\n\n", time_spent);
-//    int start_idx = 0;
-//    int end_idx = 0;
-//	clock_gettime(CLOCK_REALTIME, &start);
-//    for(int node=0; node<node_count; node++){
-//        end_idx += inbound_count[node];         
-//        sort(from_node_id, start_idx, end_idx, perm);
-//        start_idx = end_idx;
-//    }
-//    clock_gettime(CLOCK_REALTIME, &end);
-//	time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-//	printf("Time elapsed for sorting is %f seconds.\n\n", time_spent);
-//
-//    printf("Sorting done!\n");
-//
-//    // Printing sorted array 
-////    printf("========\n");
-////    for (size_t i = 0; i < edge_count; i++) {
-////        printf("%d  %d\n", from_node_id[perm[i]], to_node_id[perm[i]]);
-////    }
-//
-//    // Setting up hyperlink matrix in CRS format ----------------------------------
-//    for(int edge=0; edge<edge_count; edge++){
-//        (*col_idx)[edge] = from_node_id[perm[edge]];
-//        (*val)[edge] = 1.0/((double)outbound_count[(*col_idx)[edge]]);
-//    }    
-    // Printing hyperlink matrix
+    /* DEBUG: Printing hyperlink matrix */
 //    printf("val      col_idx\n");
 //    for (size_t i = 0; i < edge_count; i++) {
 //        printf("%f  %d\n", (*val)[i], (*col_idx)[i]);
@@ -235,6 +179,9 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
 
 void top_n_webpages(double **x, int n, int node_count){
     /* This function lists the top n webpages with their score. */
+
+    struct timespec start, end;
+    clock_gettime(CLOCK_REALTIME, &start);
     int *perm = malloc(node_count*sizeof*perm);
     for (int i = 0; i<node_count; i++) {
         perm[i] = i;
@@ -244,12 +191,39 @@ void top_n_webpages(double **x, int n, int node_count){
 
     printf("Rank          Page      Score\n");
     for (int i=0; i<n; i++){
-        printf("%3d      %7d       %.10f\n", i+1, perm[node_count - 1 - i], (*x)[perm[node_count - 1 - i]]);
+        printf("%3d.      %7d       %.10f\n", i+1, perm[node_count - 1 - i], (*x)[perm[node_count - 1 - i]]);
     }
 
     free(perm);
+
+    clock_gettime(CLOCK_REALTIME, &end);
+    double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+    printf("Time elapsed for method 1 is %f seconds.\n\n", time_spent);
     
-//
+    clock_gettime(CLOCK_REALTIME, &start);
+    double max = 0;
+    int rank = 1;
+    int idx = node_count;
+    printf("Rank          Page      Score\n");
+    for(int i=0; i<n; i++){
+        for(int node=0; node<node_count; node++){
+            if((*x)[node] > max){
+                max = (*x)[node];
+                idx = node;
+                
+            }
+        }
+        printf("%3d.      %7d       %.10f\n", rank, idx, max);
+        rank++;
+        (*x)[idx] = 0;
+        max = 0;
+    }
+    clock_gettime(CLOCK_REALTIME, &end);
+    time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+    printf("Time elapsed for method 2 is %f seconds.\n\n", time_spent);
+
+
+
 //    double roof = 10.0;
 //    double max_temp = 0;
 //    int rank = 1;
