@@ -2,6 +2,7 @@
 
 int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_ptr, int **D, int *dangling_count){
     /* This function reads web graph from a text file, and sets up the hyperlink matrix in CRS format. */
+
     /* READING FILE ***********************************************/
 
     FILE *infile = fopen(filename,"r");
@@ -14,33 +15,41 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
     int edge_count;
     for(int i=0; i<2; i++) fscanf(infile, "%*[^\n]\n"); // skip the first lines.
     fscanf(infile, "%*s %*s %d %*s %d ", &node_count, &edge_count); // read number of nodes and edges.
-    fscanf(infile, "%*[^\n]\n"); // skip another line
+    fscanf(infile, "%*[^\n]\n"); // skip another line.
+    printf("Nodes: %d, edges: %d\n", node_count, edge_count);
 
+    (*row_ptr) = malloc((node_count+1)*sizeof*(*row_ptr));
+    int *outbound_count = calloc(node_count, sizeof*outbound_count);
+    int *inbound_count = calloc(node_count, sizeof*inbound_count);
     int *from_node_id = malloc(edge_count*sizeof*from_node_id);
     int *to_node_id = malloc(edge_count*sizeof*to_node_id);
-    (*val) = malloc(edge_count*sizeof*(*val));
-    (*col_idx) = malloc(edge_count*sizeof*(*col_idx));
-    (*row_ptr) = malloc((node_count+1)*sizeof*(*row_ptr));
-    int *L = calloc(node_count, sizeof*L);
-    int *inbound_count = calloc(node_count, sizeof*inbound_count);
 
+    int edge_count_new = 0;
+    int from_node;
+    int to_node;
     for(int edge=0; edge<edge_count; edge++){
-        fscanf(infile, "%d %d", &from_node_id[edge], &to_node_id[edge]);
-        L[from_node_id[edge]]++;
-        inbound_count[to_node_id[edge]]++;
-    } 
+        fscanf(infile, "%d %d", &from_node, &to_node);
+        if(from_node != to_node){
+            from_node_id[edge_count_new] = from_node;
+            to_node_id[edge_count_new] = to_node;
+            outbound_count[from_node_id[edge_count_new]]++;
+            inbound_count[to_node_id[edge_count_new]]++;
+            edge_count_new++;
+        }
+    }
     fclose(infile);
     printf("File '%s' read successfully!\n", filename);
+    printf("Number of self-links: %d\n", edge_count - edge_count_new);
+    edge_count = edge_count_new; // removing self-linkage.
 
-    /* DEBUG: Print out webgraph with info */
-//    printf("Nodes: %d, edges: %d\n", node_count, edge_count);
+    (*val) = malloc(edge_count*sizeof*(*val));
+    (*col_idx) = malloc(edge_count*sizeof*(*col_idx));
+
+
+    /* DEBUG: Print out webgraph */
 //    for(int i=0; i<edge_count; i++){
 //        printf("%d   %d\n", from_node_id[i], to_node_id[i]);
 //    }
-
-    /* FIND SELF-LINKS ***********************************************/
-    for(int edge=0; edge<10; edge++) 
-        if(from_node_id[edge]==to_node_id[edge]) printf("Self link: %d\n", from_node_id[edge]);
 
     /* FINDING ROW_PTR ***********************************************/
     int sum = 0;
@@ -52,19 +61,15 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
     }
 
     /* FINDING D *****************************************************/
-    int *perm = malloc(edge_count*sizeof*perm);
-    for (size_t i = 0; i < edge_count; i++) {
-        perm[i] = i;
-    }
     for(int node=0; node<node_count; node++){
-        if(L[node]==0) (*dangling_count)++;
+        if(outbound_count[node]==0) (*dangling_count)++;
     }
     if((*dangling_count)>0){
-        printf("No. of dangling webpages: %d\n", *dangling_count);
+        printf("Number of dangling webpages: %d\n", *dangling_count);
         (*D) = malloc(*dangling_count*sizeof*(*D));
         int node = 0;
         for(int d_node=0; d_node<*dangling_count; d_node++){
-            while(L[node] != 0){
+            while(outbound_count[node] != 0){
                node++; 
             }
             (*D)[d_node] = node;
@@ -76,12 +81,16 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
 
     // Print L(j) and D
 //    for(int node=0; node<node_count; node++){
-//        printf("L(%d): %d\n", node, L[node]);
+//        printf("outbound_count(%d): %d\n", node, outbound_count[node]);
 //    }
 //    for(int node=0; node<*dangling_count; node++){
 //        printf("D(%d): %d\n", node, (*D)[node]);
 //    }
     // Sorting arrays --------------------------------------------------------------
+    int *perm = malloc(edge_count*sizeof*perm);
+    for (size_t i = 0; i < edge_count; i++) {
+        perm[i] = i;
+    }
     sort(to_node_id, 0, edge_count, perm);
     int start = 0;
     int end = 0;
@@ -102,21 +111,17 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
     // Setting up hyperlink matrix in CRS format ----------------------------------
     for(int edge=0; edge<edge_count; edge++){
         (*col_idx)[edge] = from_node_id[perm[edge]];
-        (*val)[edge] = 1.0/((double)L[(*col_idx)[edge]]);
+        (*val)[edge] = 1.0/((double)outbound_count[(*col_idx)[edge]]);
     }    
     // Printing hyperlink matrix
 //    printf("val      col_idx\n");
 //    for (size_t i = 0; i < edge_count; i++) {
 //        printf("%f  %d\n", (*val)[i], (*col_idx)[i]);
 //    }
-//    printf("row_ptr\n");
-//    for (size_t i = 0; i < node_count; i++) {
-//        printf("%d\n", (*row_ptr)[i]);
-//    }
 
     free(from_node_id);
     free(to_node_id);
-    free(L);
+    free(outbound_count);
     free(inbound_count);
     free(perm);
 
@@ -130,30 +135,40 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
     }    
     double W;
     double temp;
-    double diff = 1.0;
+    double diff;
     int counter_while = 0;
+    int loop = 1;
 
-    do {
+    while(loop){
         W = 0;
+        diff = 0.0;
         for(int d_node=0; d_node<*dangling_count; d_node++){
             W += (*x)[(*D)[d_node]];
         }
         temp = (1 - damping + damping*W)/(double)node_count;
+
+        //#pragma omp parallel for
         for(int i=0; i<node_count; i++){
             (*x_new)[i] = 0;
             for(int j=(*row_ptr)[i]; j<(*row_ptr)[i+1]; j++){
                 (*x_new)[i] += (*val)[j]*((*x)[(*col_idx)[j]]); 
             }
             (*x_new)[i] = (*x_new)[i]*damping + temp;
-            if(diff >  fabs((*x)[i] - (*x_new)[i])) diff = fabs((*x)[i] - (*x_new)[i]);
         }
-        for(int i=0; i<node_count; i++) (*x)[i] = (*x_new)[i];
-        counter_while++;
-    } while(diff > threshold);
 
-    printf("Counter in while loop: %d\n", counter_while);
-    // Print resulting vector
-    for(int i=0; i<10; i++) printf("x%d: %.20f\n", i, (*x)[i]);
+        for(int i=0; i<node_count; i++){
+            diff += fabs((*x)[i] - (*x_new)[i]);
+            (*x)[i] = (*x_new)[i];
+        }
+        if(diff < threshold) loop = 0;
+
+        counter_while++;
+    }
+
+    printf("Number of PageRank iterations: %d\n", counter_while);
+
+    /* DEBUG: Print resulting vector */
+//    for(int i=0; i<node_count; i++) printf("x%d: %.20f\n", i, (*x)[i]);
 
 }
 
@@ -168,7 +183,7 @@ void top_n_webpages(double **x, int n, int node_count){
 
     printf("Rank        Page          Score\n");
     for (int i=0; i<n; i++){
-        printf("%3d      %10d       %.20f\n", i+1, perm[node_count - 1 - i], (*x)[perm[node_count - 1 - i]]);
+        printf("%3d      %10d       %.10f\n", i+1, perm[node_count - 1 - i], (*x)[perm[node_count - 1 - i]]);
     }
 
     free(perm);

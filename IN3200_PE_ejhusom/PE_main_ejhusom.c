@@ -12,8 +12,8 @@ int main(int argc, char *argv[]){
     int *col_idx = NULL;
     int *row_ptr = NULL;
     // PageRank algorithm:
-    double damping = 0.85;
-    double threshold = 1e-30;
+    double damping = 1.00;
+    double threshold = 1e-4;
     int dangling_count = 0; 
 
     switch (argc) {
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
     node_count = read_graph_from_file(filename, &val, &col_idx, &row_ptr, &D, &dangling_count);
     clock_gettime(CLOCK_REALTIME, &end);
 	double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-	printf("Time elapsed for read_graph_from_file() is %f seconds.\n", time_spent);
+	printf("Time elapsed for read_graph_from_file() is %f seconds.\n\n", time_spent);
 
 
 	clock_gettime(CLOCK_REALTIME, &start);
@@ -53,17 +53,17 @@ int main(int argc, char *argv[]){
     PageRank_iterations(&val, &col_idx, &row_ptr, &x, &x_new, node_count, damping, threshold, &D, &dangling_count);
     clock_gettime(CLOCK_REALTIME, &end);
 	time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-	printf("Time elapsed for PageRank_iterations() is %f seconds.\n", time_spent);
+	printf("Time elapsed for PageRank_iterations() is %f seconds.\n\n", time_spent);
 
 	clock_gettime(CLOCK_REALTIME, &start);
     top_n_webpages(&x, n, node_count);
     clock_gettime(CLOCK_REALTIME, &end);
 	time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-    printf("Time elapsed for top_n_webpages() is %f seconds.\n", time_spent);
+    printf("Time elapsed for top_n_webpages() is %f seconds.\n\n", time_spent);
 
     clock_gettime(CLOCK_REALTIME, &end_total);
 	double time_spent_total = (end_total.tv_sec - start_total.tv_sec) + (end_total.tv_nsec - start_total.tv_nsec) / 1000000000.0;
-	printf("Time elapsed in total is %f seconds.\n", time_spent_total);
+	printf("Time elapsed in total is %f seconds.\n\n", time_spent_total);
 
     free(D);
     free(val);
