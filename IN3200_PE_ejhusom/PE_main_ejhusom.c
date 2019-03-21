@@ -3,7 +3,7 @@
 
 int main(int argc, char *argv[]){
 
-    int node_count;
+    int node_count = 0;
     char *filename;
     int n = 8;
     int *D = NULL;
@@ -13,7 +13,7 @@ int main(int argc, char *argv[]){
     int *row_ptr = NULL;
     // PageRank algorithm:
     double damping = 0.85;
-    double threshold = 1e-15;
+    double threshold = 1e-30;
     int dangling_count = 0; 
 
     switch (argc) {
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
     top_n_webpages(&x, n, node_count);
     clock_gettime(CLOCK_REALTIME, &end);
 	time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-	printf("Time elapsed for top_n_webpages() is %f seconds.\n", time_spent);
+    printf("Time elapsed for top_n_webpages() is %f seconds.\n", time_spent);
 
     clock_gettime(CLOCK_REALTIME, &end_total);
 	double time_spent_total = (end_total.tv_sec - start_total.tv_sec) + (end_total.tv_nsec - start_total.tv_nsec) / 1000000000.0;
@@ -71,6 +71,7 @@ int main(int argc, char *argv[]){
     free(row_ptr);
     free(x);
     free(x_new);
+
 
     return 0;
 }
