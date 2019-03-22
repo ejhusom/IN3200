@@ -5,6 +5,7 @@ int main(int argc, char *argv[]){
 
     int node_count = 0;
     char *filename;
+    int threads = 1;
     int n = 8;
     int *D = NULL;
     // Hyperlink matrix in CRS format:
@@ -13,26 +14,31 @@ int main(int argc, char *argv[]){
     int *row_ptr = NULL;
     // PageRank algorithm:
     double damping = 0.85;
-    double threshold = 1e-05;
+    double threshold = 1e-08;
     int dangling_count = 0; 
 
     switch (argc) {
+        case 6: 
+            damping = atoi(argv[5]);
         case 5: 
-            damping = atoi(argv[4]);
+            n = atof(argv[4]);
         case 4: 
-            n = atof(argv[3]);
-        case 3: 
-            threshold = atof(argv[2]);
-        case 2: 
+            threshold = atof(argv[3]);
+        case 3:
+            threads = atoi(argv[2]);
             filename = argv[1];
             break;
+        case 2: 
+            printf("Missing third command line argument: Number of threads.\n");
+            return 0;
         case 1: 
             printf("Give the following command line arguments:\n");
             printf("1: File name.\n");
+            printf("2: Number of threads for parallelization.\n");
             printf("Optional arguments:\n");
-            printf("2: Convergence threshold.\n");
-            printf("3: Number of top webpages you want to show (default: 8).\n");
-            printf("4: Damping constant (default: 0.85).\n");
+            printf("3: Convergence threshold (default: 1e-8).\n");
+            printf("4: Number of top webpages you want to show (default: 8).\n");
+            printf("5: Damping constant (default: 0.85).\n");
             return 0;
     }
 
@@ -50,7 +56,7 @@ int main(int argc, char *argv[]){
     clock_gettime(CLOCK_REALTIME, &start);
     double *x = malloc(node_count*sizeof*x);
     double *x_new = malloc(node_count*sizeof*x_new);
-    PageRank_iterations(&val, &col_idx, &row_ptr, &x, &x_new, node_count, damping, threshold, &D, &dangling_count);
+    PageRank_iterations(&val, &col_idx, &row_ptr, &x, &x_new, node_count, damping, threshold, &D, &dangling_count, threads);
     clock_gettime(CLOCK_REALTIME, &end);
     time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
     printf("\nTime elapsed for PageRank_iterations() is %f seconds.\n\n", time_spent);

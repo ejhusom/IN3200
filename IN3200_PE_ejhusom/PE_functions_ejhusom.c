@@ -36,8 +36,8 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
         if(from_node != to_node){
             from_node_id[edge_count_new] = from_node;
             to_node_id[edge_count_new] = to_node;
-            outbound_count[from_node_id[edge_count_new]]++;
-            inbound_count[to_node_id[edge_count_new]]++;
+            outbound_count[from_node]++;
+            inbound_count[to_node]++;
             edge_count_new++;
         }
     }
@@ -98,19 +98,17 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
     int idx;
     int *elm_count = calloc(node_count, sizeof*elm_count);
     for(int edge=0; edge<edge_count; edge++){
-        col = from_node_id[perm[edge]];
-        row = to_node_id[perm[edge]];
+        col = from_node_id[edge];
+        row = to_node_id[edge];
         elm_count[row]++;
         idx = (*row_ptr)[row] + elm_count[row] - 1;
         (*col_idx)[idx] = col;
     }
 
     int start_idx = 0;
-    int  end_idx = 0;
     for(int node=0; node<node_count; node++){
-        end_idx += inbound_count[node];         
-        sort(from_node_id, start_idx, end_idx, perm);
-        start_idx = end_idx;
+        sort(from_node_id, start_idx, (*row_ptr)[node+1], perm);
+        start_idx = (*row_ptr)[node+1];
     }
 
     for(int edge=0; edge<edge_count; edge++){
@@ -134,8 +132,9 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
     return node_count;
 }
 
-void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x, double **x_new, int node_count, double damping, double threshold, int **D, int *dangling_count){
+void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x, double **x_new, int node_count, double damping, double threshold, int **D, int *dangling_count, int threads){
     // Initial guess:
+    #pragma omp parallel for num_threads(threads)
     for(int i=0; i<node_count; i++){
        (*x)[i] = 1.0/(double)node_count;
     }    
@@ -151,10 +150,15 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
         for(int d_node=0; d_node<*dangling_count; d_node++){
             W += (*x)[(*D)[d_node]];
         }
+
         temp = (1 - damping + damping*W)/(double)node_count;
 
-        ////#pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static) num_threads(threads)
         for(int i=0; i<node_count; i++){
+//            int num_threads, thread_id;
+//            num_threads = omp_get_num_threads();
+//            thread_id = omp_get_thread_num();
+//            printf("Hello from thread no. %d out of %d threads.\n", thread_id, num_threads);
             (*x_new)[i] = 0;
             for(int j=(*row_ptr)[i]; j<(*row_ptr)[i+1]; j++){
                 (*x_new)[i] += (*val)[j]*((*x)[(*col_idx)[j]]); 
@@ -162,13 +166,25 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
             (*x_new)[i] = (*x_new)[i]*damping + temp;
         }
 
+        struct timespec start, end;
+        clock_gettime(CLOCK_REALTIME, &start);
+        //#pragma omp parallel for num_threads(threads)
         for(int i=0; i<node_count; i++){
             diff += fabs((*x)[i] - (*x_new)[i]);
             (*x)[i] = (*x_new)[i];
         }
+        clock_gettime(CLOCK_REALTIME, &end);
+        double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+        printf("Time elapsed in pragma for is %f seconds.\n", time_spent);
         if(diff < threshold) loop = 0;
 
+
         counter_while++;
+
+        /* DEBUG: 1 LOOP ONLY! */
+        //loop = 0;
+
+
     }
 
     printf("Number of PageRank iterations: %d\n", counter_while);
@@ -190,7 +206,6 @@ void top_n_webpages(double *x, int n, int node_count){
             if((x)[node] > max){
                 max = (x)[node];
                 idx = node;
-                
             }
         }
         printf("%3d.      %7d       %.10f\n", rank, idx, max);
@@ -198,7 +213,6 @@ void top_n_webpages(double *x, int n, int node_count){
         (x)[idx] = 0;
         max = 0;
     }
-
 }
 
 void swap(int *a, int *b){
@@ -217,21 +231,5 @@ void sort(int arr[], int beg, int end, int perm[]){
     swap(&perm[--l], &perm[beg]);
     sort(arr, beg, l, perm);
     sort(arr, r, end, perm);
-  }
-}
-
-void sort_double(double arr[], int beg, int end, int perm[]){
-  if (end > beg + 1) {
-    double piv = arr[perm[beg]];
-    int l = beg + 1, r = end;
-    while (l < r) {
-      if (arr[perm[l]] <= piv)
-        l++;
-      else
-        swap(&perm[l], &perm[--r]);
-    }
-    swap(&perm[--l], &perm[beg]);
-    sort_double(arr, beg, l, perm);
-    sort_double(arr, r, end, perm);
   }
 }
