@@ -153,7 +153,9 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
 
         temp = (1 - damping + damping*W)/(double)node_count;
 
-        //#pragma omp parallel for schedule(static) num_threads(threads)
+//        struct timespec start, end;
+//        clock_gettime(CLOCK_REALTIME, &start);
+        #pragma omp parallel for num_threads(threads)
         for(int i=0; i<node_count; i++){
 //            int num_threads, thread_id;
 //            num_threads = omp_get_num_threads();
@@ -165,19 +167,16 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
             }
             (*x_new)[i] = (*x_new)[i]*damping + temp;
         }
+//        clock_gettime(CLOCK_REALTIME, &end);
+//        double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+//        printf("Time elapsed in pragma for is %f seconds.\n", time_spent);
 
-        struct timespec start, end;
-        clock_gettime(CLOCK_REALTIME, &start);
-        //#pragma omp parallel for num_threads(threads)
         for(int i=0; i<node_count; i++){
             diff += fabs((*x)[i] - (*x_new)[i]);
             (*x)[i] = (*x_new)[i];
         }
-        clock_gettime(CLOCK_REALTIME, &end);
-        double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-        printf("Time elapsed in pragma for is %f seconds.\n", time_spent);
-        if(diff < threshold) loop = 0;
 
+        if(diff < threshold) loop = 0;
 
         counter_while++;
 

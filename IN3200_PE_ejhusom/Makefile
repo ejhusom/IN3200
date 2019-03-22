@@ -4,7 +4,7 @@
 # Date:            2019-02-06
 # Version:         0.2
 # =============================================
-EXEC 			= a.out
+EXEC 			= PageRank.exe
 CC 		    	= gcc
 FLAGS       	= -g -Wall -fopenmp
 

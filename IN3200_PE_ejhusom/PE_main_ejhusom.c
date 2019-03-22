@@ -8,15 +8,16 @@ int main(int argc, char *argv[]){
     int threads = 1;
     int n = 8;
     int *D = NULL;
-    // Hyperlink matrix in CRS format:
+    // Arrays for storing hyperlink matrix in CRS format:
     double *val = NULL;
     int *col_idx = NULL;
     int *row_ptr = NULL;
-    // PageRank algorithm:
+    // Variables for PageRank algorithm:
     double damping = 0.85;
     double threshold = 1e-08;
     int dangling_count = 0; 
 
+    /* TAKING COMMAND LINE ARGUMENTS ******************************************/
     switch (argc) {
         case 6: 
             damping = atoi(argv[5]);
@@ -41,6 +42,8 @@ int main(int argc, char *argv[]){
             printf("5: Damping constant (default: 0.85).\n");
             return 0;
     }
+
+    /* CALLING FUNCTIONS AND TIMING THEM ****************************************/
 
     struct timespec start_total, end_total;
     clock_gettime(CLOCK_REALTIME, &start_total);
@@ -71,6 +74,7 @@ int main(int argc, char *argv[]){
     double time_spent_total = (end_total.tv_sec - start_total.tv_sec) + (end_total.tv_nsec - start_total.tv_nsec) / 1000000000.0;
     printf("\nTime elapsed in total is %f seconds.\n\n", time_spent_total);
 
+    /* DEALLOCATING ***********************************************************/
     free(D);
     free(val);
     free(col_idx);
