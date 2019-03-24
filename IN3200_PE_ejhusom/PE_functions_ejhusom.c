@@ -88,11 +88,7 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
 //    }
 
     /* SETTING UP CRS MATRIX *************************************************/
-    int *perm = malloc(edge_count*sizeof*perm);
-    for (size_t i = 0; i < edge_count; i++) {
-        perm[i] = i;
-    }
-
+    /* Finding col_idx */
     int col;
     int row;
     int idx;
@@ -104,13 +100,13 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
         idx = (*row_ptr)[row] + elm_count[row] - 1;
         (*col_idx)[idx] = col;
     }
-
+    /* Sorting the values of col_idx within each row */
     int start_idx = 0;
     for(int node=0; node<node_count; node++){
-        sort(from_node_id, start_idx, (*row_ptr)[node+1], perm);
+        sort((*col_idx), start_idx, (*row_ptr)[node+1]);
         start_idx = (*row_ptr)[node+1];
     }
-
+    /* Finding val */
     for(int edge=0; edge<edge_count; edge++){
         (*val)[edge] = 1.0/((double)outbound_count[(*col_idx)[edge]]);
 
@@ -126,7 +122,6 @@ int read_graph_from_file(char *filename, double **val, int **col_idx, int **row_
     free(to_node_id);
     free(outbound_count);
     free(inbound_count);
-    free(perm);
     free(elm_count);
 
     return node_count;
@@ -167,9 +162,6 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
             }
             (*x_new)[i] = (*x_new)[i]*damping + temp;
         }
-//        clock_gettime(CLOCK_REALTIME, &end);
-//        double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-//        printf("Time elapsed in pragma for is %f seconds.\n", time_spent);
 
         for(int i=0; i<node_count; i++){
             diff += fabs((*x)[i] - (*x_new)[i]);
@@ -179,10 +171,6 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
         if(diff < threshold) loop = 0;
 
         counter_while++;
-
-        /* DEBUG: 1 LOOP ONLY! */
-        //loop = 0;
-
 
     }
 
@@ -214,21 +202,21 @@ void top_n_webpages(double *x, int n, int node_count){
     }
 }
 
-void swap(int *a, int *b){
-  int t=*a; *a=*b; *b=t;
-}
-
-void sort(int arr[], int beg, int end, int perm[]){
+void sort(int arr[], int beg, int end){
   if (end > beg + 1) {
-    int piv = arr[perm[beg]], l = beg + 1, r = end;
+    int piv = arr[beg], l = beg + 1, r = end;
     while (l < r) {
-      if (arr[perm[l]] <= piv)
+      if (arr[l] <= piv)
         l++;
       else
-        swap(&perm[l], &perm[--r]);
+        swap(&arr[l], &arr[--r]);
     }
-    swap(&perm[--l], &perm[beg]);
-    sort(arr, beg, l, perm);
-    sort(arr, r, end, perm);
+    swap(&arr[--l], &arr[beg]);
+    sort(arr, beg, l);
+    sort(arr, r, end);
   }
+}
+
+void swap(int *a, int *b){
+  int t=*a; *a=*b; *b=t;
 }

@@ -7,7 +7,7 @@ The project is compiled by running `make`, which produces the executable `PageRa
 The executable takes 5 command line arguments, of which 3 are optional:
 1. File name of the file containing the webgraph.
 2. Number of threads for the parallelized part of the program.
-3. Threshold value for the stopping criterion in the PageRank algorithm (optional, default: 1e-08).
+3. Threshold value for the stopping criterion in the PageRank algorithm (optional, default: 1e-10).
 4. Integer n to show the top n webpages in the webgraph (optional, default: 8).
 5. Damping constant (optional, default: 0.85).
 

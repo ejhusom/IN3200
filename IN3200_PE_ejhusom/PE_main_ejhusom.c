@@ -14,7 +14,7 @@ int main(int argc, char *argv[]){
     int *row_ptr = NULL;
     // Variables for PageRank algorithm:
     double damping = 0.85;
-    double threshold = 1e-08;
+    double threshold = 1e-10;
     int dangling_count = 0; 
 
     /* TAKING COMMAND LINE ARGUMENTS ******************************************/
