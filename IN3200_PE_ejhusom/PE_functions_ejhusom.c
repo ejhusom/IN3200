@@ -148,14 +148,8 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
 
         temp = (1 - damping + damping*W)/(double)node_count;
 
-//        struct timespec start, end;
-//        clock_gettime(CLOCK_REALTIME, &start);
         #pragma omp parallel for num_threads(threads)
         for(int i=0; i<node_count; i++){
-//            int num_threads, thread_id;
-//            num_threads = omp_get_num_threads();
-//            thread_id = omp_get_thread_num();
-//            printf("Hello from thread no. %d out of %d threads.\n", thread_id, num_threads);
             (*x_new)[i] = 0;
             for(int j=(*row_ptr)[i]; j<(*row_ptr)[i+1]; j++){
                 (*x_new)[i] += (*val)[j]*((*x)[(*col_idx)[j]]); 
@@ -175,9 +169,6 @@ void PageRank_iterations(double **val, int **col_idx, int **row_ptr, double **x,
     }
 
     printf("Number of PageRank iterations: %d\n", counter_while);
-
-    /* DEBUG: Print resulting vector */
-//    for(int i=0; i<node_count; i++) printf("x%d: %.20f\n", i, (*x)[i]);
 
 }
 

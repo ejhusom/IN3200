@@ -56,7 +56,7 @@ The project consists of the following functions, placed in the file `PE_function
 
 ### `read_graph_from_file()`
 
-This functions reads a webgraph from a file, and sets up a matrix in the Compressed Row storage (CRS) format.
+This functions reads a webgraph from a file, and sets up a matrix in the Compressed Row storage (CRS) format. The function contains some DEBUG sections, where it is opossible to remove comment-signs for easy printout of values, in order to check the results.
 
 ### `PageRank_iterations()`
 
