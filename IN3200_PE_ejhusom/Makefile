@@ -1,6 +1,5 @@
 # =============================================
 # Title:           MAKEFILE
-# Author:          Erik Johannes B. L. G. Husom
 # Date:            2019-02-06
 # Version:         0.2
 # =============================================
@@ -18,4 +17,3 @@ $(EXEC): $(SRC)
 clean:
 	@rm -rf *.o $(EXEC)
 	@echo "Cleanup complete!"
-

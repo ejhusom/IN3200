@@ -15,7 +15,7 @@ The executable takes 5 command line arguments, of which 3 are optional:
 
 ~~~
 $ make
-gcc -g -Wall -fopenmp PE_functions_ejhusom.c PE_main_ejhusom.c -o PageRank.exe
+gcc -g -Wall -fopenmp PE_functions_15229.c PE_main_15229.c -o PageRank.exe
 Linking complete!
 PageRank.exe ready to run!
 $ ./PageRank.exe web-NotreDame.txt 4
@@ -50,9 +50,9 @@ Time elapsed in total is 1.370984 seconds.
 
 ## Project structure
 
-The main source file `PE_main_ejhusom.c` sets up the needed arrays, calls all functions and times each function, in addition to the total run time.
+The main source file `PE_main_15229.c` sets up the needed arrays, calls all functions and times each function, in addition to the total run time.
 
-The project consists of the following functions, placed in the file `PE_functions_ejhusom.c`:
+The project consists of the following functions, placed in the file `PE_functions_15229.c`:
 
 ### `read_graph_from_file()`
 
