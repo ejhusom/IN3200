@@ -35,11 +35,15 @@ berkstan_threads1 = np.array([8.632797, 8.621575, 8.586063, 8.082310, 8.501536])
 berkstan_threads2 = np.array([6.754331, 4.343911, 4.081742, 5.861859, 4.259250])
 berkstan_threads3 = np.array([5.195232, 5.585364, 4.704594, 4.635240, 5.406529])
 berkstan_threads4 = np.array([4.042900, 3.957007, 4.381022, 5.084178, 4.699359])
+berkstan_threads5 = np.array([3.848768, 3.878695, 3.864901, 4.040139, 4.149730])
+berkstan_threads6 = np.array([3.793445, 3.866507, 4.163662, 3.867370, 3.795713])
 berkstan = np.array([
         np.mean(berkstan_threads1),
         np.mean(berkstan_threads2),
         np.mean(berkstan_threads3),
-        np.mean(berkstan_threads4)])
+        np.mean(berkstan_threads4),
+        np.mean(berkstan_threads5),
+        np.mean(berkstan_threads6)])
 
 
 notredame_read = np.array([0.412195, 0.397453, 0.404293, 0.395382, 0.396027])
@@ -52,10 +56,13 @@ berkstan_read = np.array([3.153049, 3.215710, 3.131762, 3.137375, 3.131903])
 berkstan_top = np.array([0.017123, 0.017431, 0.017285, 0.037139, 0.017071])
 
 threads = np.array([1, 2, 3, 4])
+threads_expand = np.array([1, 2, 3, 4, 5, 6])
 threads1 = np.array([1, 1, 1, 1, 1])
 threads2 = np.array([2, 2, 2, 2, 2])
 threads3 = np.array([3, 3, 3, 3, 3])
 threads4 = np.array([4, 4, 4, 4, 4])
+threads5 = np.array([5, 5, 5, 5, 5])
+threads6 = np.array([6, 6, 6, 6, 6])
 
 # SET PLOT STYLE
 plt.style.use('ggplot')
@@ -67,34 +74,33 @@ w = 5; h = 4
 # TIME USAGE VS NUMBER OF THREADS
 plt.figure(figsize=(w,h))
 
-plt.plot(threads, notredame, 'b-x')
-#plt.errorbar(threads, notredame, notredame_std)
-plt.plot(threads1, notredame_threads1, 'b.', label="web-NotreDame")
-plt.plot(threads2, notredame_threads2, 'b.', label="web-NotreDame")
-plt.plot(threads3, notredame_threads3, 'b.', label="web-NotreDame")
-plt.plot(threads4, notredame_threads4, 'b.', label="web-NotreDame")
-
-plt.plot(threads, stanford, 'r-x')
-plt.plot(threads1, stanford_threads1, 'r.', label="web-Stanford")
-plt.plot(threads2, stanford_threads2, 'r.', label="web-Stanford")
-plt.plot(threads3, stanford_threads3, 'r.', label="web-Stanford")
-plt.plot(threads4, stanford_threads4, 'r.', label="web-Stanford")
-
-plt.plot(threads, berkstan, 'g-x')
+#plt.plot(threads, notredame, 'b-x')
+#plt.plot(threads1, notredame_threads1, 'b.', label="web-NotreDame")
+#plt.plot(threads2, notredame_threads2, 'b.', label="web-NotreDame")
+#plt.plot(threads3, notredame_threads3, 'b.', label="web-NotreDame")
+#plt.plot(threads4, notredame_threads4, 'b.', label="web-NotreDame")
+#
+#plt.plot(threads, stanford, 'r-x')
+#plt.plot(threads1, stanford_threads1, 'r.', label="web-Stanford")
+#plt.plot(threads2, stanford_threads2, 'r.', label="web-Stanford")
+#plt.plot(threads3, stanford_threads3, 'r.', label="web-Stanford")
+#plt.plot(threads4, stanford_threads4, 'r.', label="web-Stanford")
+#
+plt.plot(threads_expand, berkstan, 'g-x')
 plt.plot(threads1, berkstan_threads1, 'g.', label="web-BerkStan")
 plt.plot(threads2, berkstan_threads2, 'g.', label="web-BerkStan")
 plt.plot(threads3, berkstan_threads3, 'g.', label="web-BerkStan")
 plt.plot(threads4, berkstan_threads4, 'g.', label="web-BerkStan")
+plt.plot(threads5, berkstan_threads5, 'g.', label="web-BerkStan")
+plt.plot(threads6, berkstan_threads6, 'g.', label="web-BerkStan")
 
 plt.xlabel("number of threads")
 plt.ylabel("time usage [s]")
-plt.xticks([1,2,3,4])
+plt.xticks([1,2,3,4,5,6])
 plt.legend()
 plt.tight_layout()
 plt.savefig("runtime.pdf",dpi=300)
 plt.show()
-
-print(berkstan)
 
 # TIME USAGE FOR SERIAL FUNCTIONS
 print(np.mean(notredame_read))
