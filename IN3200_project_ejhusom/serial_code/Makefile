@@ -1,60 +1,25 @@
-## =============================================
-## Title:           MAKEFILE
-## Date:            2019-04-17
-## Version:         0.3
-## =============================================
-#EXEC 			= serial_code
-#CC 		    	= gcc
-#FLAGS       	= -g -Wall -O2
-#LDFLAGS         = -L../simple-jpeg/ -lsimplejpeg
-#
-#SRC 			:= $(wildcard *.c)
-#OBJS            := $(wildcard *.o)
-##====================================================
-#
-#all: simple-jpeg $(EXEC)
-#
-#$(EXEC): $(OBJS)
-#	$(CC) $(FLAGS) $< -o $@ $(LDFLAGS)
-#	@echo "Linking complete!"
-#	@echo $(EXEC) "ready to run!"
-#
-#simple-jpeg:
-#	$(MAKE) -C ../simple-jpeg
-#
-#
-#clean:
-#	@rm -rf *.o $(EXEC)
-#	$(MAKE) -C ../simple-jpeg clean
-#	@echo "Cleanup complete!"
-
-CC = gcc
-CFLAGS = -O2
+# Makefile by Erik Johannes Husom on 2019-02-06
+#==============================================
+EXEC 			= serial_main.exe
+CC 		    	= gcc
+FLAGS       		= -Wall -g -O2
 LDFLAGS = -L../simple-jpeg/ -lsimplejpeg
 
-PROJ = serial_main
-OBJS = serial_main.o
+SRC 			:= $(wildcard *.c)
+#==============================================
 
-all: simple-jpeg $(PROJ)
-
-serial_main: $(OBJS)
-	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
+all: simple-jpeg $(EXEC)
 
 simple-jpeg:
 	$(MAKE) -C ../simple-jpeg
 
-obj-clean:
-	$(RM) *.o
-
-exec-clean:
-	$(RM) $(PROJ)
-
-autosave-clean:
-	$(RM) *~
+$(EXEC): $(SRC)
+	$(CC) $(FLAGS) $(SRC) -lm -o $@ $(LDFLAGS)
+	@echo "Linking complete!"
+	@echo $(EXEC) "ready to run!"
 
 clean:
-	$(MAKE) obj-clean
-	$(MAKE) exec-clean
-	$(MAKE) autosave-clean
+	@rm -rf *.o $(EXEC)
 	$(MAKE) -C ../simple-jpeg clean
+	@echo "Cleanup complete!"
 
