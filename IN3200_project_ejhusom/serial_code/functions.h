@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 typedef struct
 {
@@ -11,8 +12,6 @@ typedef struct
     int n;
 }
 image;
-
-#define idx(i,j) (i*u->n + j)
 
 void allocate_image(image *u, int m, int n);
 void deallocate_image(image *u);
