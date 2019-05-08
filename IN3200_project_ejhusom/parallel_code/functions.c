@@ -35,7 +35,7 @@ void convert_image_to_jpeg(const image *u, unsigned char* image_chars){
 }
 
 
-void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int iters, int num_procs){
+void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int iters, int num_procs, int my_rank){
     for (int i = 0; i < u->m; i++){
         u_bar->image_data[i][0] = u->image_data[i][0];
         u_bar->image_data[i][u->n-1] = u->image_data[i][u->n-1];

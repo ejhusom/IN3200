@@ -109,7 +109,7 @@ int main (int argc, char *argv[])
     /* DENOISING IMAGE AND MEASURING TIME USAGE */
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &start);
-    iso_diffusion_denoising_parallel(&u, &u_bar, kappa, iters, num_procs);
+    iso_diffusion_denoising_parallel(&u, &u_bar, kappa, iters, num_procs, my_rank);
     clock_gettime(CLOCK_REALTIME, &end);
     double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
     printf("Time used: %f\n", time_spent);
