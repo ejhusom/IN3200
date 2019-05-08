@@ -19,7 +19,6 @@ int main (int argc, char *argv[])
     unsigned char *image_chars, *my_image_chars;
     char *input_jpeg_filename;
     char *output_jpeg_filename = "denoised.jpeg";
-    MPI_Comm comm;
 
     MPI_Init (&argc, &argv);
     MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
@@ -95,26 +94,26 @@ int main (int argc, char *argv[])
     
 
     /* CREATING COMMUNICATOR */
-    int dim[2], period[2], reorder, dim_count;
-    dim[0] = 0; dim[1] = 1;
-    period[0] = 0; period[1] = 0;
-    reorder = 0;
-    dim_count = 2;
-    int my_cart_coords[2];
-    MPI_Dims_create(num_procs, dim_count, dim);
-    MPI_Cart_create(MPI_COMM_WORLD, dim_count, dim, period, reorder, &comm);
-    MPI_Cart_coords(comm, my_rank, dim_count, my_cart_coords);
+//    int dim[2], period[2], reorder, dim_count;
+//    dim[0] = 0; dim[1] = 1;
+//    period[0] = 0; period[1] = 0;
+//    reorder = 0;
+//    dim_count = 2;
+//    int my_cart_coords[2];
+//    MPI_Dims_create(num_procs, dim_count, dim);
+//    MPI_Cart_create(MPI_COMM_WORLD, dim_count, dim, period, reorder, &comm);
+//    MPI_Cart_coords(comm, my_rank, dim_count, my_cart_coords);
 
 
     /* DENOISING IMAGE AND MEASURING TIME USAGE */
     
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &start);
-    MPI_Barrier(comm);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     iso_diffusion_denoising_parallel(&u, &u_bar, kappa, iters, num_procs, my_rank);
 
-    MPI_Barrier(comm);
+    MPI_Barrier(MPI_COMM_WORLD);
     clock_gettime(CLOCK_REALTIME, &end);
     double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
 
