@@ -48,19 +48,23 @@ void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int i
     }
 
     for (int it = 0; it < iters; it++){
-        for (int i = 1; i < u->m-1; i++){
-            for (int j = 1; j < u->n-1; j++){
-                u_bar->image_data[i][j] = u->image_data[i][j] 
-                                            + kappa*(u->image_data[i-1][j] 
-                                                    + u->image_data[i][j-1] 
-                                                    - 4*u->image_data[i][j] 
-                                                    + u->image_data[i][j+1] 
-                                                    + u->image_data[i+1][j]); 
-            }
-        } 
-        for (int i = 1; i < u->m-1; i++){
-            for (int j = 1; j < u->n-1; j++){
-                u->image_data[i][j] = u_bar->image_data[i][j];
+
+        if (my_rank != 0 && my_rank != (num_procs - 1)){
+
+            for (int i = 1; i < u->m-1; i++){
+                for (int j = 1; j < u->n-1; j++){
+                    u_bar->image_data[i][j] = u->image_data[i][j] 
+                                                + kappa*(u->image_data[i-1][j] 
+                                                        + u->image_data[i][j-1] 
+                                                        - 4*u->image_data[i][j] 
+                                                        + u->image_data[i][j+1] 
+                                                        + u->image_data[i+1][j]); 
+                }
+            } 
+            for (int i = 1; i < u->m-1; i++){
+                for (int j = 1; j < u->n-1; j++){
+                    u->image_data[i][j] = u_bar->image_data[i][j];
+                }
             }
         }
     }

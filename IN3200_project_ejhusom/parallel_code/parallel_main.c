@@ -107,18 +107,26 @@ int main (int argc, char *argv[])
 
 
     /* DENOISING IMAGE AND MEASURING TIME USAGE */
+    
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &start);
+    MPI_Barrier(comm);
+
     iso_diffusion_denoising_parallel(&u, &u_bar, kappa, iters, num_procs, my_rank);
+
+    MPI_Barrier(comm);
     clock_gettime(CLOCK_REALTIME, &end);
     double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-    printf("Time used: %f\n", time_spent);
-    /* WRITING TIME MEASUREMENT TO FILE */
-//    FILE *outfile = fopen("timing.txt", "a");
-//    fprintf(outfile, "%f\n", time_spent);
-//    fclose(outfile);
 
-    printf("Image is denoised!\n");
+    if (my_rank == 0){
+        printf("Time spent: %f\n", time_spent);
+        /* WRITING TIME MEASUREMENT TO FILE */
+    //    FILE *outfile = fopen("timing.txt", "a");
+    //    fprintf(outfile, "%f\n", end-start);
+    //    fclose(outfile);
+    }
+//    printf("Image is denoised!\n");
+
 
     convert_image_to_jpeg(&u, my_image_chars);
 
@@ -146,13 +154,13 @@ int main (int argc, char *argv[])
         export_JPEG_file(output_jpeg_filename, image_chars, m, n, c, 75);
         deallocate_image(&whole_image);
         free(image_chars);
+        free(sizes);
+        free(start_idx);
     }
 
     deallocate_image(&u);
     deallocate_image(&u_bar);
     free(my_image_chars);
-    free(sizes);
-    free(start_idx);
 
     MPI_Finalize();
     return 0;
