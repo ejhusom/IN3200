@@ -18,7 +18,7 @@ int main (int argc, char *argv[])
     image u, u_bar;
     unsigned char *image_chars, *my_image_chars;
     char *input_jpeg_filename = NULL;
-    char *output_jpeg_filename = "denoised.jpeg";
+    char *output_jpeg_filename = "denoised.jpg";
 
     MPI_Init (&argc, &argv);
     MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
