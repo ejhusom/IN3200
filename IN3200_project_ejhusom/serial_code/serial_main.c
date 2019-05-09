@@ -16,8 +16,8 @@ int main (int argc, char *argv[])
     float kappa = 0.2;
     image u, u_bar;
     unsigned char *image_chars;
-    char *input_jpeg_filename;
-    char *output_jpeg_filename = "denoised.jpeg";
+    char *input_jpeg_filename = NULL;
+    char *output_jpeg_filename = "denoised.jpg";
 
     /* TAKING COMMAND LINE ARGUMENTS */
     switch (argc) {

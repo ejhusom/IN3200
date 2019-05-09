@@ -15,9 +15,9 @@ int main (int argc, char *argv[])
     int my_m, my_start, my_stop, my_rank, num_procs;
     int iters = 100;
     float kappa = 0.2;
-    image u, u_bar, whole_image;
+    image u, u_bar;
     unsigned char *image_chars, *my_image_chars;
-    char *input_jpeg_filename;
+    char *input_jpeg_filename = NULL;
     char *output_jpeg_filename = "denoised.jpeg";
 
     MPI_Init (&argc, &argv);
@@ -47,7 +47,6 @@ int main (int argc, char *argv[])
     /* IMPORTING IMAGE */
     if (my_rank==0){
         import_JPEG_file(input_jpeg_filename, &image_chars, &m, &n, &c);
-        allocate_image(&whole_image, m, n);
     }
 
 
@@ -71,8 +70,6 @@ int main (int argc, char *argv[])
         my_m = m_partition;
         my_stop = n*(my_rank + 1)*m_partition;
     }
-
-    printf("Rank=%d, my_m=%d, start=%d, stop=%d\n", my_rank, my_m, my_start, my_stop);
 
     int *sizes, *start_idx;
     int my_size = my_m*n;
@@ -120,7 +117,6 @@ int main (int argc, char *argv[])
 
     if (my_rank==0){
         export_JPEG_file(output_jpeg_filename, image_chars, m, n, c, 75);
-        deallocate_image(&whole_image);
         free(image_chars);
         free(sizes);
         free(start_idx);
@@ -131,5 +127,7 @@ int main (int argc, char *argv[])
     free(my_image_chars);
 
     MPI_Finalize();
+
     return 0;
-}
+
+} /* end of main() */
