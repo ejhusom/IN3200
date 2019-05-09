@@ -58,7 +58,7 @@ int main (int argc, char *argv[])
 
     printf("Image is denoised!\n");
 
-    convert_image_to_jpeg(&u_bar, image_chars);    
+    convert_image_to_jpeg(&u, image_chars);    
     export_JPEG_file(output_jpeg_filename, image_chars, m, n, c, 75);
     deallocate_image(&u);
     deallocate_image(&u_bar);
