@@ -95,7 +95,7 @@ void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int i
             }
         } 
 
-//        /* Computing lower edge */
+        /* Computing lower edge */
         if (my_rank != (num_procs -1)){
             int i = u->m - 1;
             for (int j = 1; j < u->n-1; j++){

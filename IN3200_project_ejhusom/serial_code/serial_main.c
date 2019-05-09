@@ -12,7 +12,7 @@ int main (int argc, char *argv[])
 {
 
     int m, n, c; 
-    int iters = 100;
+    int iters = 200;
     float kappa = 0.2;
     image u, u_bar;
     unsigned char *image_chars;
@@ -52,9 +52,9 @@ int main (int argc, char *argv[])
     double time_spent = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
     printf("Time used: %f\n", time_spent);
     /* WRITING TIME MEASUREMENT TO FILE */
-//    FILE *outfile = fopen("timing.txt", "a");
-//    fprintf(outfile, "%f\n", time_spent);
-//    fclose(outfile);
+    FILE *outfile = fopen("timing_serial.txt", "a");
+    fprintf(outfile, "%f\n", time_spent);
+    fclose(outfile);
 
     printf("Image is denoised!\n");
 

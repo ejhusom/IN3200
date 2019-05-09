@@ -13,7 +13,7 @@ int main (int argc, char *argv[])
 
     int m, n, c; 
     int my_m, my_start, my_stop, my_rank, num_procs;
-    int iters = 100;
+    int iters = 200;
     float kappa = 0.2;
     image u, u_bar;
     unsigned char *image_chars, *my_image_chars;
@@ -103,9 +103,11 @@ int main (int argc, char *argv[])
     if (my_rank == 0){
         printf("Time spent: %f\n", time_spent);
         /* WRITING TIME MEASUREMENT TO FILE */
-    //    FILE *outfile = fopen("timing.txt", "a");
-    //    fprintf(outfile, "%f\n", end-start);
-    //    fclose(outfile);
+        char timing_file[50];
+        sprintf(timing_file, "timing_parallel_%d_procs.txt", num_procs);
+        FILE *outfile = fopen(timing_file, "a");
+        fprintf(outfile, "%f\n", time_spent);
+        fclose(outfile);
     }
 
     if (my_rank == 0) printf("Image is denoised!\n");

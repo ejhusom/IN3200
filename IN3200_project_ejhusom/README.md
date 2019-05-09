@@ -12,7 +12,7 @@ The executable takes 4 command line arguments, of which 3 are optional:
 1. File name of the image to be denoised.
 2. File name of the output image (optional, default: "denoised.jpg".
 3. Kappa value, a scalar constant used by the diffusion algorithm. Should be maximum 0.2 (optional, default: 0.2).
-4. Number of iterations, where a larger number corresponds to a higher degree of denoising (optional, default: 100).
+4. Number of iterations, where a larger number corresponds to a higher degree of denoising (optional, default: 200).
 
 
 #### Example compilation and executing serial code
@@ -27,7 +27,7 @@ $ make
 Linking complete!
 serial_main.exe ready to run!
 $ ./serial_main.exe mona_lisa_noisy.jpg
-Time used: 3.042708
+Time used: 6.096279
 Image is denoised!
 ~~~
 
@@ -39,7 +39,7 @@ The executable must be run with `mpirun -np [number of processes]`, and takes 4 
 1. File name of the image to be denoised.
 2. File name of the output image (optional, default: "denoised.jpg".
 3. Kappa value, a scalar constant used by the diffusion algorithm. Should be maximum 0.2 (optional, default: 0.2).
-4. Number of iterations, where a larger number corresponds to a higher degree of denoising (optional, default: 100).
+4. Number of iterations, where a larger number corresponds to a higher degree of denoising (optional, default: 200).
 
 
 #### Example compilation and executing parallel code
@@ -54,9 +54,9 @@ $ make
 Linking complete!
 parallel_main.exe ready to run!
 $ mpirun -np 4 parallel_main.exe mona_lisa_noisy.jpg
-Time spent: 2.071043
+Time spent: 4.001505
 Image is denoised!
 ~~~
 
 ## Timing
-Each time any of the programs are run the timing measurements of the diffusion algorithm is appended to a file called `timing.txt`.
+Both the serial and parallel implementation contains code for writing the timing measurements of the diffusion algorithm to a file called `timing.txt`, but this part of the code is by default commented out. This is done to make it easier to measure performance by running the programs multiple times, and then computing averages from the recorded time measurements.
