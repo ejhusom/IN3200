@@ -57,12 +57,17 @@ void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int i
     for (int it = 0; it < iters; it++){
         /* SENDING AND RECIEVING EDGES */
         if (my_rank == 0){
+
             MPI_Send(&(u->image_data[u->m - 1][1]), inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD);
             MPI_Recv(lower_edge, inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
         } else if (my_rank == (num_procs - 1)){
+
             MPI_Recv(upper_edge, inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Send(&(u->image_data[0][1]), inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD);
+
         } else {
+
             if ( (my_rank % 2) > 0){
                 MPI_Recv(upper_edge, inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 MPI_Send(&(u->image_data[u->m-1][1]), inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD);
@@ -74,25 +79,53 @@ void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int i
                 MPI_Send(&(u->image_data[0][1]), inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD);
                 MPI_Recv(lower_edge, inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             }
+        } /* end of send/recieve */
+
+        /* DIFFUSION ALGORITHM */
+
+        /* Computing main interior */
+        for (int i = 1; i < u->m-1; i++){
+            for (int j = 1; j < u->n-1; j++){
+                u_bar->image_data[i][j] = u->image_data[i][j] 
+                                            + kappa*(u->image_data[i-1][j] 
+                                                    + u->image_data[i][j-1] 
+                                                    - 4*u->image_data[i][j] 
+                                                    + u->image_data[i][j+1] 
+                                                    + u->image_data[i+1][j]); 
+            }
+        } 
+
+//        /* Computing lower edge */
+        if (my_rank != (num_procs -1)){
+            int i = u->m - 1;
+            for (int j = 1; j < u->n-1; j++){
+                u_bar->image_data[i][j] = u->image_data[i][j] 
+                                            + kappa*(u->image_data[i-1][j] 
+                                                    + u->image_data[i][j-1] 
+                                                    - 4*u->image_data[i][j] 
+                                                    + u->image_data[i][j+1] 
+                                                    + lower_edge[j]); 
+            }
+
         }
 
+        /* Computing upper edge */
+        if (my_rank != 0){
 
-//        if (my_rank != 0 && my_rank != (num_procs - 1)){
-//
-//            for (int i = 1; i < u->m-1; i++){
-//                for (int j = 1; j < u->n-1; j++){
-//                    u_bar->image_data[i][j] = u->image_data[i][j] 
-//                                                + kappa*(u->image_data[i-1][j] 
-//                                                        + u->image_data[i][j-1] 
-//                                                        - 4*u->image_data[i][j] 
-//                                                        + u->image_data[i][j+1] 
-//                                                        + u->image_data[i+1][j]); 
-//                }
-//            } 
-//        }
+            int i = 0;
+            for (int j = 1; j < u->n-1; j++){
+                u_bar->image_data[i][j] = u->image_data[i][j] 
+                                            + kappa*(upper_edge[j] 
+                                                    + u->image_data[i][j-1] 
+                                                    - 4*u->image_data[i][j] 
+                                                    + u->image_data[i][j+1] 
+                                                    + u->image_data[i+1][j]); 
+            }
+
+        } /* end of diffusion algorithm */
 
         /* UPDATING IMAGE */
-        for (int i = 1; i < u->m-1; i++){
+        for (int i = 0; i < u->m; i++){
             for (int j = 1; j < u->n-1; j++){
                 u->image_data[i][j] = u_bar->image_data[i][j];
             }

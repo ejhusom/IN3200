@@ -87,23 +87,9 @@ int main (int argc, char *argv[])
 
     MPI_Scatterv(image_chars, sizes, start_idx, MPI_UNSIGNED_CHAR, my_image_chars, my_size, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
 
-
     allocate_image(&u, my_m, n);
     allocate_image(&u_bar, my_m, n);
     convert_jpeg_to_image(my_image_chars, &u);
-    
-
-    /* CREATING COMMUNICATOR */
-//    int dim[2], period[2], reorder, dim_count;
-//    dim[0] = 0; dim[1] = 1;
-//    period[0] = 0; period[1] = 0;
-//    reorder = 0;
-//    dim_count = 2;
-//    int my_cart_coords[2];
-//    MPI_Dims_create(num_procs, dim_count, dim);
-//    MPI_Cart_create(MPI_COMM_WORLD, dim_count, dim, period, reorder, &comm);
-//    MPI_Cart_coords(comm, my_rank, dim_count, my_cart_coords);
-
 
     /* DENOISING IMAGE AND MEASURING TIME USAGE */
     
@@ -124,28 +110,11 @@ int main (int argc, char *argv[])
     //    fprintf(outfile, "%f\n", end-start);
     //    fclose(outfile);
     }
-//    printf("Image is denoised!\n");
+
+    if (my_rank == 0) printf("Image is denoised!\n");
 
 
     convert_image_to_jpeg(&u, my_image_chars);
-
-    /* PRINT SUBIMAGE FOR EACH PROCESS */
-//    if (my_rank==0){
-//    char *name = "test0.jpeg";
-//    export_JPEG_file(name, my_image_chars, my_m, n, 1, 75);
-//    }
-//    if (my_rank==1){
-//    char *name = "test1.jpeg";
-//    export_JPEG_file(name, my_image_chars, my_m, n, 1, 75);
-//    }
-//    if (my_rank==2){
-//    char *name = "test2.jpeg";
-//    export_JPEG_file(name, my_image_chars, my_m, n, 1, 75);
-//    }
-//    if (my_rank==3){
-//    char *name = "test3.jpeg";
-//    export_JPEG_file(name, my_image_chars, my_m, n, 1, 75);
-//    }
 
     MPI_Gatherv(my_image_chars, my_size, MPI_UNSIGNED_CHAR, image_chars, sizes, start_idx, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
 
