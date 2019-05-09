@@ -2,7 +2,7 @@
 #==============================================
 EXEC 			= serial_main.exe
 CC 		    	= gcc
-FLAGS       		= -Wall -g -O2
+FLAGS       		= -Wall -g -O3
 LDFLAGS = -L../simple-jpeg/ -lsimplejpeg
 
 SRC 			:= $(wildcard *.c)

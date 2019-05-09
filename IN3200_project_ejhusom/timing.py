@@ -16,7 +16,7 @@ w = 5; h = 4
 plt.figure(figsize=(w,h))
 
 
-num_procs = np.array([2, 3, 4, 5, 6])
+num_procs = np.array([1, 2, 3, 4, 5, 6])
 parallel_timings = np.zeros(5)
 parallel_data = np.loadtxt('parallel_code/timing_parallel_4_procs.txt')
 
@@ -30,7 +30,7 @@ plt.plot(num_procs, parallel_timings, '.-', label='parallel code')
 
 plt.xlabel("number of threads")
 plt.ylabel("time usage [s]")
-plt.xticks([2,3,4,5,6])
+plt.xticks([1,2,3,4,5,6])
 plt.tight_layout()
 plt.savefig("runtime.pdf",dpi=300)
 plt.show()

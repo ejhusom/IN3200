@@ -56,30 +56,32 @@ void iso_diffusion_denoising_parallel(image *u, image *u_bar, float kappa, int i
     /* STARTING ITERATIONS */
     for (int it = 0; it < iters; it++){
         /* SENDING AND RECIEVING EDGES */
-        if (my_rank == 0){
+        if (num_procs > 1){
+            if (my_rank == 0){
 
-            MPI_Send(&(u->image_data[u->m - 1][1]), inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD);
-            MPI_Recv(lower_edge, inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        } else if (my_rank == (num_procs - 1)){
-
-            MPI_Recv(upper_edge, inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Send(&(u->image_data[0][1]), inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD);
-
-        } else {
-
-            if ( (my_rank % 2) > 0){
-                MPI_Recv(upper_edge, inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Send(&(u->image_data[u->m-1][1]), inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD);
+                MPI_Send(&(u->image_data[u->m - 1][1]), inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD);
                 MPI_Recv(lower_edge, inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            } else if (my_rank == (num_procs - 1)){
+
+                MPI_Recv(upper_edge, inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 MPI_Send(&(u->image_data[0][1]), inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD);
+
             } else {
-                MPI_Send(&(u->image_data[u->m-1][1]), inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD);
-                MPI_Recv(upper_edge, inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Send(&(u->image_data[0][1]), inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD);
-                MPI_Recv(lower_edge, inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            }
-        } /* end of send/recieve */
+
+                if ( (my_rank % 2) > 0){
+                    MPI_Recv(upper_edge, inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                    MPI_Send(&(u->image_data[u->m-1][1]), inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD);
+                    MPI_Recv(lower_edge, inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                    MPI_Send(&(u->image_data[0][1]), inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD);
+                } else {
+                    MPI_Send(&(u->image_data[u->m-1][1]), inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD);
+                    MPI_Recv(upper_edge, inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                    MPI_Send(&(u->image_data[0][1]), inner_length, MPI_FLOAT, my_rank-1, 0, MPI_COMM_WORLD);
+                    MPI_Recv(lower_edge, inner_length, MPI_FLOAT, my_rank+1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                }
+            } /* end of send/recieve */
+        }
 
         /* DIFFUSION ALGORITHM */
 

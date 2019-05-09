@@ -12,7 +12,7 @@ int main (int argc, char *argv[])
 {
 
     int m, n, c; 
-    int iters = 200;
+    int iters = 100;
     float kappa = 0.2;
     image u, u_bar;
     unsigned char *image_chars;

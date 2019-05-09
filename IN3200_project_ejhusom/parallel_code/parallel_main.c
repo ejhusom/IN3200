@@ -13,7 +13,7 @@ int main (int argc, char *argv[])
 
     int m, n, c; 
     int my_m, my_start, my_stop, my_rank, num_procs;
-    int iters = 200;
+    int iters = 100;
     float kappa = 0.2;
     image u, u_bar;
     unsigned char *image_chars, *my_image_chars;
@@ -91,8 +91,8 @@ int main (int argc, char *argv[])
     /* DENOISING IMAGE AND MEASURING TIME USAGE */
     
     struct timespec start, end;
-    clock_gettime(CLOCK_REALTIME, &start);
     MPI_Barrier(MPI_COMM_WORLD);
+    clock_gettime(CLOCK_REALTIME, &start);
 
     iso_diffusion_denoising_parallel(&u, &u_bar, kappa, iters, num_procs, my_rank);
 
