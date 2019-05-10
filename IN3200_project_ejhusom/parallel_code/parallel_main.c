@@ -47,6 +47,7 @@ int main (int argc, char *argv[])
     /* IMPORTING IMAGE */
     if (my_rank==0){
         import_JPEG_file(input_jpeg_filename, &image_chars, &m, &n, &c);
+        printf("Num. procs.: %d\n", num_procs);
     }
 
 

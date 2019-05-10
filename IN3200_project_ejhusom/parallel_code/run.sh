@@ -5,7 +5,7 @@ do
     for i in {1..5} 
     do
         mpirun -np $rank parallel_main.exe mona_lisa_noisy.jpg
-        sleep 6s
+        sleep 3s
     done
 done
 

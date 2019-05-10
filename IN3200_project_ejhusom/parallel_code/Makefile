@@ -2,7 +2,7 @@
 #==============================================
 EXEC 			= parallel_main.exe
 CC 		    	= mpicc
-FLAGS       		= -Wall -g -O4 
+FLAGS       		= -Wall -g -O3 
 LDFLAGS = -L../simple-jpeg/ -lsimplejpeg
 
 SRC 			:= $(wildcard *.c)
