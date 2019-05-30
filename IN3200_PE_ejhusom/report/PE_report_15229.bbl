@@ -1,0 +1,15 @@
+\begin{thebibliography}{1}
+
+\bibitem{stanford}
+Stanford University.
+\newblock Stanford large network dataset collection.
+\newblock \url{https://snap.stanford.edu/data/index.html#web}.
+
+\bibitem{exercises}
+University of~Oslo.
+\newblock In3200 exercise set 1.
+\newblock
+  \url{https://www.uio.no/studier/emner/matnat/ifi/IN3200/v19/teaching-material/exercises-in3200-week01.pdf},
+  2019.
+
+\end{thebibliography}

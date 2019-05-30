@@ -1,0 +1,8 @@
+\babel@toc {english}{}
+\contentsline {section}{\tocsection {}{1}{Introduction}}{1}{section.1}
+\contentsline {section}{\tocsection {}{2}{Program structure}}{1}{section.2}
+\contentsline {subsection}{\tocsubsection {}{2.1}{Common functions}}{1}{subsection.2.1}
+\contentsline {subsection}{\tocsubsection {}{2.2}{Serial implementation}}{1}{subsection.2.2}
+\contentsline {subsection}{\tocsubsection {}{2.3}{Parallell implementation}}{1}{subsection.2.3}
+\contentsline {section}{\tocsection {}{3}{Example image}}{2}{section.3}
+\contentsline {section}{\tocsection {}{4}{Time measurements}}{2}{section.4}
