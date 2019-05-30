@@ -2,16 +2,17 @@
 #==============================================
 EXEC 			= serial_main.exe
 CC 		    	= gcc
-FLAGS       		= -Wall -g -O3
-LDFLAGS = -L../simple-jpeg/ -lsimplejpeg
+FLAGS       	= -Wall -g -O3
+LDFLAGS         = -L../simple-jpeg/ -lsimplejpeg
 
-SRC 			:= $(wildcard *.c)
+SRC = $(wildcard *.c)
 #==============================================
 
 all: simple-jpeg $(EXEC)
 
 simple-jpeg:
 	$(MAKE) -C ../simple-jpeg
+
 
 $(EXEC): $(SRC)
 	$(CC) $(FLAGS) $(SRC) -lm -o $@ $(LDFLAGS)
