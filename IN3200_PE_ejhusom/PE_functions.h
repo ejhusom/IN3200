@@ -1,5 +1,5 @@
-#ifndef PE_FUNCTIONS_15229_H
-#define PE_FUNCTIONS_15229_H
+#ifndef PE_FUNCTIONS_H
+#define PE_FUNCTIONS_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -13,4 +13,4 @@ void top_n_webpages(double *x, int n, int node_count);
 void sort(int arr[], int beg, int end);
 void swap(int *a, int *b);
 
-#endif /* PE_FUNCTIONS_15229_H */
+#endif /* PE_FUNCTIONS_H */
