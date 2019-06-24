@@ -1,3 +1,4 @@
 *.o
 report/
+latex/
 *.txt
